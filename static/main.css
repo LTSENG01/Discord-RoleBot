@@ -1,6 +1,64 @@
 body {
     color: #DDD;
     background-color: #222;
+    font-family: 'Montserrat', sans-serif;
+
+    /*noinspection CssInvalidFunction*/
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Alata', sans-serif;
+}
+
+hr {
+    border-color: #DDD
+}
+
+/* secondary gray = #383838 (headers), #303030 (body) */
+
+.section {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+.card {
+    border-radius: 0;
+    border: none;
+    margin-bottom: 5px;
+}
+
+.card .card-header {
+    background-color: #363636;
+}
+
+.card .card-header .btn {
+    color: #DDD;
+    padding-left: 5px;
+}
+
+.card .card-header .btn:hover {
+    color: #FFF;
+    text-decoration: underline;
+}
+
+.card .card-body {
+    background-color: #2E2E2E;
+}
+
+.role {
+    color: #FFF;
+
+    display: inline-block;
+    padding: 3px 8px 1px 8px;
+    margin-bottom: 5px;
+
+    border: 1px solid red;
+    border-radius: 25px;
+}
+
+.role:hover {
+    cursor: pointer;
 }
 
 #login-button {
@@ -15,4 +73,5 @@ body {
 #login-button img {
     max-height: 60px;
 }
+
 /* Blurple: #7289DA */

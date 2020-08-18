@@ -2,18 +2,59 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
     <title>Discord Role Bot | Dashboard</title>
 
     <link href="bootstrap/css/bootstrap.min.css" type="text/css" rel="stylesheet">
     <link href="main.css" type="text/css" rel="stylesheet">
-</head>
+    <link href="https://fonts.googleapis.com/css2?family=Alata&family=Montserrat:wght@300;400&display=swap" rel="stylesheet"></head>
 <body>
 <!-- IF UNPRIVILEGED, REDIRECT TO /login (use JS + backend to verify) -->
 <div class="container">
     <h1>Dashboard</h1>
     <h5>UMass CICS Community</h5>
+    <h6 id="username">Username</h6>
+    <img src="discord-small.png" id="avatar-icon" height="40px" alt="Avatar icon">
     <img src="discord-small.png" id="guild-icon" height="40px" alt="Guild icon">
+
+
+    <div class="section">
+        <h4>Current Roles</h4>
+        <hr>
+        <div class="card">
+            <div class="card-body" id="current-roles-container">
+                <div class="role" style="border-color: rgb(150, 0, 0); background-color: rgb(150, 0, 0)">CS 121 <strong>x</strong></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h4>Assignable Roles</h4>
+        <hr>
+        <div class="accordion" id="assignable-roles-accordion">
+            <!-- EXAMPLE ROLE -->
+<!--            <div class="card">-->
+<!--                <div class="card-header" id="identity-roles-header">-->
+<!--                    <h2 class="mb-0">-->
+<!--                        <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse"-->
+<!--                                data-target="#collapse-identity-roles" aria-expanded="true" aria-controls="collapse-identity-roles">-->
+<!--                            Identity Roles-->
+<!--                        </button>-->
+<!--                    </h2>-->
+<!--                </div>-->
+<!--                <div class="collapse show" id="collapse-identity-roles" aria-labelledby="identity-roles-header"-->
+<!--                     data-parent="#assignable-roles-accordion">-->
+<!--                    <div class="card-body" id="identity-roles-container">-->
+<!--                        <div class="role" style="border-color: rgb(150, 0, 0); background-color: rgb(150, 0, 0)">CS 121 <strong>+</strong></div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+        </div>
+    </div>
 </div>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs=" crossorigin="anonymous"></script>
+<script src="bootstrap/js/bootstrap.min.js"></script>
 <script src="dashboard.js" rel="script"></script>
 </body>
 </html>

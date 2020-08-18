@@ -43,7 +43,8 @@ interface User {
 interface Role {
     id: string,
     name: string,
-    color: number
+    color: number,
+    priority: number
 }
 
 router
@@ -107,6 +108,19 @@ router
             ctx.response.body = DISCORD_CDN + ctx.params.path
         }
     })
+    .get("/userroles/:userid", async ctx => {
+        if (ctx.params && ctx.params.userid) {
+            console.log("Fetching user roles: " + ctx.params.userid)
+
+            let response = await fetch(DISCORD_API + "guilds/" + GUILD_INFO.id + "/members/" + ctx.params.userid, {
+                headers: {
+                    'Authorization': "Bot " + BOT_SECRET
+                }
+            })
+
+            ctx.response.body = await response.json()
+        }
+    })
     .post("/roles", async ctx => {
         // requires Bot authorization
         // need to do server-side validation to prevent bad role assignment todo
@@ -119,10 +133,12 @@ router
         // remove unnecessary role metadata
         let json = await response.json()
         let roles: Role[] = json.map((item: any) => {
+            console.log(item)
             return {
                 id: item.id,
                 name: item.name,
-                color: item.color
+                color: item.color,
+                priority: item.position
             }
         })
 
@@ -144,11 +160,13 @@ router
             identity: unrestrictedRoles.filter(role => identityRegex.test(role.name)),
             graduation: unrestrictedRoles.filter(role => graduationRegex.test(role.name)),
             residence: unrestrictedRoles.filter(role => residenceRegex.test(role.name)),
-            csCourses: unrestrictedRoles.filter(role => csCoursesRegex.test(role.name)),
-            mathCourses: unrestrictedRoles.filter(role => mathCoursesRegex.test(role.name)),
-            interdisciplinaryCourses: unrestrictedRoles.filter(role => interdisciplinaryCoursesRegex.test(role.name)),
+            cS_Courses: unrestrictedRoles.filter(role => csCoursesRegex.test(role.name)),
+            math_Courses: unrestrictedRoles.filter(role => mathCoursesRegex.test(role.name)),
+            interdisciplinary_Courses: unrestrictedRoles.filter(role => interdisciplinaryCoursesRegex.test(role.name)),
             hobbies: unrestrictedRoles.filter(role => hobbiesRegex.test(role.name)),
-            miscellaneous: unrestrictedRoles.filter(role => miscellaneousRegex.test(role.name))
+            miscellaneous: unrestrictedRoles.filter(role => miscellaneousRegex.test(role.name)),
+            restricted: roles.filter(role => restrictedRegex.test(role.name)),
+            all: roles
         }
 
         ctx.response.body = organizedRoles
@@ -156,6 +174,10 @@ router
     .post("/save", async ctx => {
         let params = ctx.request.url.searchParams
         console.log("SAVE: " + params)
+    })
+    .get("/logout", ctx => {
+        ctx.cookies.delete("discord-access-token")
+        ctx.response.redirect("/")
     })
 
 app.use(router.routes())
