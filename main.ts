@@ -1,4 +1,4 @@
-import {Application, Router, send} from "https://deno.land/x/oak/mod.ts"
+import { Application, Router, send } from "https://deno.land/x/oak/mod.ts"
 import { Status } from "https://deno.land/x/oak/deps.ts";
 
 const app = new Application()
@@ -40,15 +40,11 @@ interface User {
     inCICSGuild: boolean
 }
 
-interface Roles {
+interface Role {
     id: string,
     name: string,
     color: number
 }
-
-let savedAccessToken: AccessToken
-let savedUser: User
-let savedRoles: [Roles]
 
 router
     .get("/login", ctx => {
@@ -82,34 +78,82 @@ router
             body: data,
             headers: headers
         })
-        let accessToken = await result.json()
+        let accessToken: AccessToken = await result.json()
         console.log("Access Token: " + accessToken.access_token + " " + accessToken.expires_in)
 
         if (regex.test(accessToken.access_token)) {
-            savedAccessToken = accessToken
+            ctx.cookies.set("discord-access-token", accessToken.access_token)
+            ctx.cookies.set("discord-token-expiration", Date.now().toString())  // todo cookie math
             ctx.response.redirect("/dashboard.html")
         } else {
             ctx.response.status = Status.BadRequest
         }
     })
-    .get("/identity", async ctx => {
+    .post("/identity", async ctx => {
+        let accessToken = ctx.cookies.get("discord-access-token") ?? ""
         let identity = await fetch(DISCORD_API + "users/@me", {
             headers: {
-                'Authorization': "Bearer " + savedAccessToken.access_token
+                'Authorization': "Bearer " + accessToken
             }
         })
+        if (identity.status === 401) {
+            ctx.response.status = Status.Unauthorized
+        }
         ctx.response.body = await identity.text()
     })
-    .get("/roles", async ctx => {
+    .get("/images/:path*", async ctx => {
+        if (ctx.params && ctx.params.path) {
+            console.log("Fetching image: " + ctx.params.path)
+            ctx.response.body = DISCORD_CDN + ctx.params.path
+        }
+    })
+    .post("/roles", async ctx => {
         // requires Bot authorization
-        let roles = await fetch(DISCORD_API + "guilds/" + GUILD_INFO.id + "/roles", {
+        // need to do server-side validation to prevent bad role assignment todo
+        let response = await fetch(DISCORD_API + "guilds/" + GUILD_INFO.id + "/roles", {
             headers: {
                 'Authorization': "Bot " + BOT_SECRET
             }
         })
-        ctx.response.body = await roles.text()
+
+        // remove unnecessary role metadata
+        let json = await response.json()
+        let roles: Role[] = json.map((item: any) => {
+            return {
+                id: item.id,
+                name: item.name,
+                color: item.color
+            }
+        })
+
+        // remove useless and restricted roles --> function
+        const restrictedRegex = /(server|verified|@everyone|umass cics|cics role bot|admin|----)/i
+        let unrestrictedRoles = roles.filter(role => !restrictedRegex.test(role.name))
+
+        const identityRegex = /^(he\/him|she\/her|they\/them|ze\/hir)/i
+        const graduationRegex = /^(alumni|graduate student|class of \d{4})/i
+        const residenceRegex = /^(zoomer|central|ohill|northeast|southwest|honors|sylvan|off-campus|rap data science|rap ethics society)/i
+        const csCoursesRegex = /^(cs|cics|info)/i
+        const mathCoursesRegex = /^(math|stat)/i
+        const interdisciplinaryCoursesRegex = /^(business|biology|economics|engineering|linguistics|psychology|informatics|physics)/i
+        const hobbiesRegex = /^(projects|hardware|video games|finance|music|travel)/i
+        const miscellaneousRegex = /^(snooper|daily coding problems|community events)/i
+
+        // organize roles into categories
+        let organizedRoles = {
+            identity: unrestrictedRoles.filter(role => identityRegex.test(role.name)),
+            graduation: unrestrictedRoles.filter(role => graduationRegex.test(role.name)),
+            residence: unrestrictedRoles.filter(role => residenceRegex.test(role.name)),
+            csCourses: unrestrictedRoles.filter(role => csCoursesRegex.test(role.name)),
+            mathCourses: unrestrictedRoles.filter(role => mathCoursesRegex.test(role.name)),
+            interdisciplinaryCourses: unrestrictedRoles.filter(role => interdisciplinaryCoursesRegex.test(role.name)),
+            hobbies: unrestrictedRoles.filter(role => hobbiesRegex.test(role.name)),
+            miscellaneous: unrestrictedRoles.filter(role => miscellaneousRegex.test(role.name))
+        }
+
+        ctx.response.body = organizedRoles
     })
-    .get("/save", async ctx => {
+    .post("/save", async ctx => {
         let params = ctx.request.url.searchParams
         console.log("SAVE: " + params)
     })
