@@ -57,7 +57,7 @@ hr {
     border-radius: 25px;
 }
 
-.role:hover {
+.role:not(.restricted):hover {
     cursor: pointer;
 }
 

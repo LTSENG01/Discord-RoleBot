@@ -1,5 +1,5 @@
-import { Application, Router, send } from "https://deno.land/x/oak/mod.ts"
-import { Status } from "https://deno.land/x/oak/deps.ts";
+import {Application, Router, send} from "https://deno.land/x/oak/mod.ts"
+import {Status} from "https://deno.land/x/oak/deps.ts";
 
 const app = new Application()
 const router = new Router()
@@ -24,6 +24,16 @@ const GUILD_INFO = {
     icon: "a_5addd83a4328a1a9772c53d1e6c18978"
 }
 
+const restrictedRegex = /(server|verified|@everyone|umass cics|cics role bot|admin|----)/i
+const identityRegex = /^(he\/him|she\/her|they\/them|ze\/hir)/i
+const graduationRegex = /^(alumni|graduate student|class of \d{4})/i
+const residenceRegex = /^(zoomer|central|ohill|northeast|southwest|honors|sylvan|off-campus|rap data science|rap ethics society)/i
+const csCoursesRegex = /^(cs|cics|info)/i
+const mathCoursesRegex = /^(math|stat)/i
+const interdisciplinaryCoursesRegex = /^(business|biology|economics|engineering|linguistics|psychology|informatics|physics)/i
+const hobbiesRegex = /^(projects|hardware|video games|finance|music|travel)/i
+const miscellaneousRegex = /^(snooper|daily coding problems|community events)/i
+
 interface AccessToken {
     access_token: string,
     token_type: string,
@@ -37,7 +47,7 @@ interface User {
     username: string,
     avatar: string,
     discriminator: string,
-    inCICSGuild: boolean
+    inCorrectGuild: boolean
 }
 
 interface Role {
@@ -45,6 +55,53 @@ interface Role {
     name: string,
     color: number,
     priority: number
+}
+
+interface Guild {
+    id: string,
+    name: string,
+    icon: string,
+    owner: false,
+    permissions: number,
+    features: string[],
+    permissions_new: string
+}
+
+async function getRoles() {
+    // requires Bot authorization
+    let response = await fetch(DISCORD_API + "guilds/" + GUILD_INFO.id + "/roles", {
+        headers: {
+            'Authorization': "Bot " + BOT_SECRET
+        }
+    })
+
+    // remove unnecessary role metadata
+    let json = await response.json()
+    let roles: Role[] = json.map((item: any) => {
+        return {
+            id: item.id,
+            name: item.name,
+            color: item.color,
+            priority: item.position
+        }
+    })
+
+    // remove useless and restricted roles
+    let unrestrictedRoles = roles.filter(role => !restrictedRegex.test(role.name))
+
+    // organize roles into categories
+    return {
+        identity: unrestrictedRoles.filter(role => identityRegex.test(role.name)),
+        graduation: unrestrictedRoles.filter(role => graduationRegex.test(role.name)),
+        residence: unrestrictedRoles.filter(role => residenceRegex.test(role.name)),
+        cS_Courses: unrestrictedRoles.filter(role => csCoursesRegex.test(role.name)),
+        math_Courses: unrestrictedRoles.filter(role => mathCoursesRegex.test(role.name)),
+        interdisciplinary_Courses: unrestrictedRoles.filter(role => interdisciplinaryCoursesRegex.test(role.name)),
+        hobbies: unrestrictedRoles.filter(role => hobbiesRegex.test(role.name)),
+        miscellaneous: unrestrictedRoles.filter(role => miscellaneousRegex.test(role.name)),
+        restricted: roles.filter(role => restrictedRegex.test(role.name)),
+        all: roles
+    }
 }
 
 router
@@ -92,6 +149,7 @@ router
     })
     .post("/identity", async ctx => {
         let accessToken = ctx.cookies.get("discord-access-token") ?? ""
+
         let identity = await fetch(DISCORD_API + "users/@me", {
             headers: {
                 'Authorization': "Bearer " + accessToken
@@ -100,7 +158,32 @@ router
         if (identity.status === 401) {
             ctx.response.status = Status.Unauthorized
         }
-        ctx.response.body = await identity.text()
+
+        let guilds = await fetch(DISCORD_API + "users/@me/guilds", {
+            headers: {
+                'Authorization': "Bearer " + accessToken
+            }
+        })
+        if (guilds.status === 401) {
+            ctx.response.status = Status.Unauthorized
+        }
+
+        let userInfo = await identity.json()
+        let guildInfo: Guild[] = await guilds.json()
+
+        let inCorrectGuild = (guildsArray: Guild[], guildID: string) => {
+            return guildsArray.filter(guild => guild["id"] === guildID).length > 0
+        }
+
+        let user: User = {
+            id: userInfo.id,
+            username: userInfo.username,
+            avatar: userInfo.avatar,
+            discriminator: userInfo.discriminator,
+            inCorrectGuild: inCorrectGuild(guildInfo, GUILD_INFO.id)
+        }
+
+        ctx.response.body = JSON.stringify(user)
     })
     .get("/images/:path*", async ctx => {
         if (ctx.params && ctx.params.path) {
@@ -122,58 +205,74 @@ router
         }
     })
     .post("/roles", async ctx => {
-        // requires Bot authorization
-        // need to do server-side validation to prevent bad role assignment todo
-        let response = await fetch(DISCORD_API + "guilds/" + GUILD_INFO.id + "/roles", {
-            headers: {
-                'Authorization': "Bot " + BOT_SECRET
-            }
-        })
-
-        // remove unnecessary role metadata
-        let json = await response.json()
-        let roles: Role[] = json.map((item: any) => {
-            console.log(item)
-            return {
-                id: item.id,
-                name: item.name,
-                color: item.color,
-                priority: item.position
-            }
-        })
-
-        // remove useless and restricted roles --> function
-        const restrictedRegex = /(server|verified|@everyone|umass cics|cics role bot|admin|----)/i
-        let unrestrictedRoles = roles.filter(role => !restrictedRegex.test(role.name))
-
-        const identityRegex = /^(he\/him|she\/her|they\/them|ze\/hir)/i
-        const graduationRegex = /^(alumni|graduate student|class of \d{4})/i
-        const residenceRegex = /^(zoomer|central|ohill|northeast|southwest|honors|sylvan|off-campus|rap data science|rap ethics society)/i
-        const csCoursesRegex = /^(cs|cics|info)/i
-        const mathCoursesRegex = /^(math|stat)/i
-        const interdisciplinaryCoursesRegex = /^(business|biology|economics|engineering|linguistics|psychology|informatics|physics)/i
-        const hobbiesRegex = /^(projects|hardware|video games|finance|music|travel)/i
-        const miscellaneousRegex = /^(snooper|daily coding problems|community events)/i
-
-        // organize roles into categories
-        let organizedRoles = {
-            identity: unrestrictedRoles.filter(role => identityRegex.test(role.name)),
-            graduation: unrestrictedRoles.filter(role => graduationRegex.test(role.name)),
-            residence: unrestrictedRoles.filter(role => residenceRegex.test(role.name)),
-            cS_Courses: unrestrictedRoles.filter(role => csCoursesRegex.test(role.name)),
-            math_Courses: unrestrictedRoles.filter(role => mathCoursesRegex.test(role.name)),
-            interdisciplinary_Courses: unrestrictedRoles.filter(role => interdisciplinaryCoursesRegex.test(role.name)),
-            hobbies: unrestrictedRoles.filter(role => hobbiesRegex.test(role.name)),
-            miscellaneous: unrestrictedRoles.filter(role => miscellaneousRegex.test(role.name)),
-            restricted: roles.filter(role => restrictedRegex.test(role.name)),
-            all: roles
-        }
-
-        ctx.response.body = organizedRoles
+        ctx.response.body = await getRoles()
     })
     .post("/save", async ctx => {
-        let params = ctx.request.url.searchParams
-        console.log("SAVE: " + params)
+        interface SavePayload {
+            userID: string,
+            rolesToAdd: string[],
+            rolesToRemove: string[]
+        }
+
+        console.log("/save")
+
+        // Grab latest copy of all roles
+        let roles = await getRoles()
+
+        const payload = ctx.request.body()
+        if (payload.type == "json") {
+            let savePayload: SavePayload = await payload.value
+
+            // sanitize roles (remove restricted roles)
+            savePayload.rolesToAdd = savePayload.rolesToAdd.filter(roleID => {
+                return !roles.restricted.some((role: Role) => role.id === roleID)
+            })
+
+            savePayload.rolesToRemove = savePayload.rolesToRemove.filter(roleID => {
+                return !roles.restricted.some((role: Role) => role.id === roleID)
+            })
+
+            if (savePayload.rolesToAdd.length === 0 && savePayload.rolesToRemove.length === 0) {
+                ctx.response.status = Status.UnprocessableEntity
+                return
+            }
+
+            const roleAPI = `guilds/${GUILD_INFO.id}/members/${savePayload.userID}/roles/` // /{role.id}
+
+            // assign roles
+            for (const roleID of savePayload.rolesToAdd) {
+                fetch(DISCORD_API + roleAPI + roleID, {
+                    headers: {
+                        'Authorization': "Bot "
+                    },
+                    method: "PUT"
+                }).then().catch(err => {
+                    console.error(err)
+                    ctx.response.status = Status.ServiceUnavailable
+                    return
+                })
+            }
+
+            // remove roles
+            for (const roleID of savePayload.rolesToRemove) {
+                fetch(DISCORD_API + roleAPI + roleID, {
+                    headers: {
+                        'Authorization': "Bot " + BOT_SECRET
+                    },
+                    method: "DELETE"
+                }).then().catch(err => {
+                    console.error(err)
+                    ctx.response.status = Status.ServiceUnavailable
+                    return
+                })
+            }
+
+            console.log("SAVE: " + payload)
+            ctx.response.status = Status.OK
+        } else {
+            console.error("Bad payload received. " + payload.type)
+            ctx.response.status = Status.UnprocessableEntity
+        }
     })
     .get("/logout", ctx => {
         ctx.cookies.delete("discord-access-token")

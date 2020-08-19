@@ -23,6 +23,7 @@ async function getRoles() {
     return await response.json()
 }
 
+// getUserRoles(userID: string): string[]
 async function getUserRoles(userID) {
     console.log("Getting user roles.")
     let response = await fetch(`/userroles/${userID}`)
@@ -67,13 +68,14 @@ function decimalToRGB(number) {
     return normalizedColor
 }
 
-function generateRoleTemplate(role, endChar) {
+function generateRoleTemplate(role, endChar="", restricted=false, current=false) {
     const colorArray = decimalToRGB(role.color)
     const color = `rgb(${colorArray[0]}, ${colorArray[1]}, ${colorArray[2]})`
 
     return `
-        <div class="role" style="border-color: ${color}; background-color: ${color}" 
-            id="${role.name}">${role.name} <strong>${endChar}</strong></div>
+        <div class="role ${restricted ? 'restricted' : ''} ${current ? 'current' : 'assignable'}" 
+            style="border-color: ${color}; background-color: ${color}" 
+            id="${role.id}">${role.name} <strong>${endChar}</strong></div>
     `
 }
 
@@ -91,7 +93,7 @@ function generateCategoriesAndRoles(rolesObject) {
         }
 
         // Uppercase the first character, add a space for every underscore
-        const normalizedHeader = category.charAt(0).toUpperCase() + category.replaceAll("_", " ").slice(1)
+        const normalizedHeader = category.charAt(0).toUpperCase() + category.replace("_", " ").slice(1)
 
         let roleCollection = ""
         rolesForCategory(category).map(role => {
@@ -136,16 +138,55 @@ function generateCurrentRoles(roles, userRoles) {
     console.log(orderedRoles)
 
     orderedRoles.map(role => {
-        roleCollection += generateRoleTemplate(role, "x")
+        if (roles["restricted"].find(restrictedRole => restrictedRole.id === role.id)) {
+            roleCollection += generateRoleTemplate(role, "", true, true)
+        } else {
+            roleCollection += generateRoleTemplate(role, "x", false, true)
+        }
     })
 
     return roleCollection
 }
 
+async function submitRoleChanges(userID, roleIDsToAdd, roleIDsToRemove) {
+    let response = await fetch("/save", {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            userID: userID,
+            rolesToAdd: roleIDsToAdd,
+            rolesToRemove: roleIDsToRemove
+        })
+    })
+    if (response.status === 200) {
+        location.reload()   // refreshes the webpage
+    } else {
+        alert("There was an issue saving your role changes. Please try again.\n\n" + response.status + ": " + response.statusText)
+    }
+}
+
 window.onload = async function() {
     let userInfo = await getUserInfo()
+
+    // Only members of this guild can use this bot
+    if (!userInfo.inCorrectGuild) {
+        alert("You don't seem to be a member of UMass CICS Community. Please join the server and try again later. If you think there is an error, DM an admin. " +
+            "\n\nClick Close to join the server.")
+        redirectBrowser("https://discord.gg/PVtSByR")
+    }
+
     let roles = await getRoles()
     let userRoles = await getUserRoles(userInfo.id)
+
+    // Only "verified" users can use this bot
+    if (!userRoles.find(role => lookupRole(roles.all, role).name === "Verified")) {
+        alert("Please read the messages in #welcome and react with a checkmark. If you think there is an error, DM an admin. " +
+            "\n\nClick Close to be redirected.")
+        redirectBrowser("https://discordapp.com/channels/574287921717182505/695941985206272040/745356434656592013")
+    }
+
     let userImageURL = await getUserAvatar(userInfo.id, userInfo.avatar)
     let guildImageURL = await getGuildAvatar("574287921717182505", "a_5addd83a4328a1a9772c53d1e6c18978")
 
@@ -156,4 +197,23 @@ window.onload = async function() {
     document.getElementById("current-roles-container").innerHTML = generateCurrentRoles(roles, userRoles)
     document.getElementById("assignable-roles-accordion").innerHTML = generateCategoriesAndRoles(roles)
 
+    document.getElementById("submit-changes").addEventListener("click", () => {
+        console.log("Submitting changes!")
+        submitRoleChanges(userInfo.id, [], [])
+    })
+
+    document.getElementById("reset").addEventListener("click", () => {
+        console.log("Resetting changes!")
+        location.reload()
+    })
+
+    Array.from(document.getElementsByClassName("role")).forEach(role => {
+        role.addEventListener("click", () => {
+            if (role.classList.contains("current")) {
+                document.getElementById("assignable-roles-accordion").innerHTML += role.outerHTML
+            }
+            document.getElementById("current-roles-container").innerHTML += role.outerHTML
+            console.log("clicked! ID: " + role.id)
+        })
+    })
 }

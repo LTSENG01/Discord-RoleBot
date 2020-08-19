@@ -15,16 +15,20 @@
     <h1>Dashboard</h1>
     <h5>UMass CICS Community</h5>
     <h6 id="username">Username</h6>
-    <img src="discord-small.png" id="avatar-icon" height="40px" alt="Avatar icon">
-    <img src="discord-small.png" id="guild-icon" height="40px" alt="Guild icon">
+    <img src="discord-small.png" class="rounded-circle" id="avatar-icon" height="40px" alt="Avatar icon">
+    <img src="discord-small.png" class="rounded-circle" id="guild-icon" height="40px" alt="Guild icon">
 
+    <div class="section">
+        <button class="btn btn-outline-primary" id="submit-changes">Submit Changes</button>
+        <button class="btn btn-outline-danger" id="reset">Reset</button>
+    </div>
 
     <div class="section">
         <h4>Current Roles</h4>
         <hr>
         <div class="card">
             <div class="card-body" id="current-roles-container">
-                <div class="role" style="border-color: rgb(150, 0, 0); background-color: rgb(150, 0, 0)">CS 121 <strong>x</strong></div>
+<!--                <div class="role" style="border-color: rgb(150, 0, 0); background-color: rgb(150, 0, 0)">CS 121 <strong>x</strong></div>-->
             </div>
         </div>
     </div>
@@ -51,6 +55,9 @@
 <!--                </div>-->
 <!--            </div>-->
         </div>
+    </div>
+    <div class="text-center">
+        <p class="text-secondary">Created by Larry Tseng.</p>
     </div>
 </div>
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs=" crossorigin="anonymous"></script>
