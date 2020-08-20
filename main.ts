@@ -24,7 +24,7 @@ const GUILD_INFO = {
     icon: "a_5addd83a4328a1a9772c53d1e6c18978"
 }
 
-const restrictedRegex = /(server|verified|@everyone|umass cics|cics role bot|admin|----)/i
+const restrictedRegex = /(server|verified|@everyone|umass cics|cics role bot|admin|professor|----)/i
 const identityRegex = /^(he\/him|she\/her|they\/them|ze\/hir)/i
 const graduationRegex = /^(alumni|graduate student|class of \d{4})/i
 const residenceRegex = /^(zoomer|central|ohill|northeast|southwest|honors|sylvan|off-campus|rap data science|rap ethics society)/i
@@ -89,7 +89,7 @@ async function getRoles() {
     // remove useless and restricted roles
     let unrestrictedRoles = roles.filter(role => !restrictedRegex.test(role.name))
 
-    // organize roles into categories
+    // organize roles into categories TODO, tag roles instead of by category
     return {
         identity: unrestrictedRoles.filter(role => identityRegex.test(role.name)),
         graduation: unrestrictedRoles.filter(role => graduationRegex.test(role.name)),
@@ -283,6 +283,7 @@ app.use(router.routes())
 app.use(router.allowedMethods())
 
 app.use(async ctx => {
+    ctx.response.headers.set('Cache-Control', 'max-age=604800')
     await send(ctx, ctx.request.url.pathname, {
         root: `${Deno.cwd()}/static`,
         index: "index.html",

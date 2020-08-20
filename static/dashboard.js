@@ -4,7 +4,7 @@ async function getUserInfo() {
     let response = await fetch("/identity", {
         method: "POST"
     })
-    if (response.status === 401) {
+    if (response.status !== 200) {
         // Show message as a Bootstrap alert, redirect in __ seconds.
         redirectBrowser("/")
     }
@@ -31,12 +31,14 @@ async function getUserRoles(userID) {
 }
 
 async function getUserAvatar(userID, avatarID) {
+    console.log("Getting user avatar.")
     let path = `avatars/${userID}/${avatarID}.png`
     let image = await fetch(`/images/${path}`)
     return await image.text()
 }
 
 async function getGuildAvatar(guildID, iconID) {
+    console.log("Getting guild icon.")
     let path
 
     // checks if the icon is animated or not
@@ -121,34 +123,39 @@ function generateCategoriesAndRoles(rolesObject) {
         categoryCollection += categoryTemplate
     })
 
-    return categoryCollection
+    document.getElementById("assignable-roles-accordion").innerHTML = categoryCollection
 }
 
 function lookupRole(roles, roleID) {
     return roles.find(role => role.id === roleID)
 }
 
-function generateCurrentRoles(roles, userRoles) {
-    let allRoles = roles["all"];
-    let roleCollection = ""
-
-    let matchingRoles = userRoles.map(roleID => lookupRole(allRoles, roleID))
+// generateCurrentRoles(userRoles: string[])     // this is only used when roles are given as strings
+function generateCurrentRoles(userRoles) {
+    let matchingRoles = userRoles.map(roleID => lookupRole(globalRoleMap.assignableRoles.all, roleID))
     let orderedRoles = matchingRoles.sort((a, b) => b.priority - a.priority)
 
-    console.log(orderedRoles)
+    globalRoleMap.currentRoles = orderedRoles   // globalRoleMap.currentRoles: Role[]
+    renderCurrentRoles(orderedRoles)
+}
 
-    orderedRoles.map(role => {
-        if (roles["restricted"].find(restrictedRole => restrictedRole.id === role.id)) {
+// renderCurrentRoles(currentRoles: Role[])
+function renderCurrentRoles(currentRoles) {
+    let roleCollection = ""
+
+    currentRoles.map(role => {
+        if (globalRoleMap.assignableRoles.restricted.find(restrictedRole => restrictedRole.id === role.id)) {
             roleCollection += generateRoleTemplate(role, "", true, true)
         } else {
             roleCollection += generateRoleTemplate(role, "x", false, true)
         }
     })
 
-    return roleCollection
+    document.getElementById("current-roles-container").innerHTML = roleCollection
 }
 
 async function submitRoleChanges(userID, roleIDsToAdd, roleIDsToRemove) {
+    console.log("Submitting role changes.")
     let response = await fetch("/save", {
         method: "POST",
         headers: {
@@ -167,8 +174,17 @@ async function submitRoleChanges(userID, roleIDsToAdd, roleIDsToRemove) {
     }
 }
 
+let globalRoleMap = {
+    currentRoles: [],
+    assignableRoles: { },
+    rolesToAdd: [],
+    rolesToRemove: []
+}
+
 window.onload = async function() {
     let userInfo = await getUserInfo()
+    let userImageURL = await getUserAvatar(userInfo.id, userInfo.avatar)
+    let guildImageURL = await getGuildAvatar("574287921717182505", "a_5addd83a4328a1a9772c53d1e6c18978")
 
     // Only members of this guild can use this bot
     if (!userInfo.inCorrectGuild) {
@@ -177,29 +193,30 @@ window.onload = async function() {
         redirectBrowser("https://discord.gg/PVtSByR")
     }
 
-    let roles = await getRoles()
-    let userRoles = await getUserRoles(userInfo.id)
+    // Populate global role map
+    globalRoleMap.assignableRoles = await getRoles()
+    globalRoleMap.currentRoles = await getUserRoles(userInfo.id)
 
     // Only "verified" users can use this bot
-    if (!userRoles.find(role => lookupRole(roles.all, role).name === "Verified")) {
+    if (!globalRoleMap.currentRoles.find(role => lookupRole(globalRoleMap.assignableRoles.restricted, role).name === "Verified")) {
         alert("Please read the messages in #welcome and react with a checkmark. If you think there is an error, DM an admin. " +
             "\n\nClick Close to be redirected.")
         redirectBrowser("https://discordapp.com/channels/574287921717182505/695941985206272040/745356434656592013")
     }
 
-    let userImageURL = await getUserAvatar(userInfo.id, userInfo.avatar)
-    let guildImageURL = await getGuildAvatar("574287921717182505", "a_5addd83a4328a1a9772c53d1e6c18978")
-
+    // Set identity details
     document.getElementById("username").innerText = userInfo.username + "#" + userInfo.discriminator
     document.getElementById("avatar-icon").setAttribute("src", userImageURL)
     document.getElementById("guild-icon").setAttribute("src", guildImageURL)
 
-    document.getElementById("current-roles-container").innerHTML = generateCurrentRoles(roles, userRoles)
-    document.getElementById("assignable-roles-accordion").innerHTML = generateCategoriesAndRoles(roles)
+    // Render roles
+    generateCurrentRoles(globalRoleMap.currentRoles)
+    generateCategoriesAndRoles(globalRoleMap.assignableRoles)
 
     document.getElementById("submit-changes").addEventListener("click", () => {
         console.log("Submitting changes!")
-        submitRoleChanges(userInfo.id, [], [])
+        submitRoleChanges(userInfo.id, globalRoleMap.rolesToAdd, globalRoleMap.rolesToRemove)
+        location.reload()
     })
 
     document.getElementById("reset").addEventListener("click", () => {
@@ -207,13 +224,30 @@ window.onload = async function() {
         location.reload()
     })
 
-    Array.from(document.getElementsByClassName("role")).forEach(role => {
-        role.addEventListener("click", () => {
-            if (role.classList.contains("current")) {
-                document.getElementById("assignable-roles-accordion").innerHTML += role.outerHTML
-            }
-            document.getElementById("current-roles-container").innerHTML += role.outerHTML
-            console.log("clicked! ID: " + role.id)
-        })
-    })
+    // Array.from(document.getElementsByClassName("role")).forEach(role => {
+    //     role.addEventListener("click", () => {
+    //         if (role.classList.contains("current")) {
+    //             document.getElementById("assignable-roles-accordion").innerHTML += role.outerHTML
+    //         }
+    //         document.getElementById("current-roles-container").innerHTML += role.outerHTML
+    //         console.log("clicked! ID: " + role.id)
+    //     })
+    // })
+
+    /*
+
+    currentRoles + assignableRoles should be read-only
+    make changes to delta properties
+
+    Click on assignable role.
+    Remove from assignableRoles.category.
+    Add it to rolesToAdd (id) and currentRoles (Role).
+    Re-render all roles.
+
+    Click on current role.
+    If present, remove from rolesToAdd.
+    Remove from currentRoles.
+    Add it to rolesToRemove(id
+
+     */
 }

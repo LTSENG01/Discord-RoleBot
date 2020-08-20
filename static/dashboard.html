@@ -12,13 +12,28 @@
 <body>
 <!-- IF UNPRIVILEGED, REDIRECT TO /login (use JS + backend to verify) -->
 <div class="container">
-    <h1>Dashboard</h1>
-    <h5>UMass CICS Community</h5>
-    <h6 id="username">Username</h6>
-    <img src="discord-small.png" class="rounded-circle" id="avatar-icon" height="40px" alt="Avatar icon">
-    <img src="discord-small.png" class="rounded-circle" id="guild-icon" height="40px" alt="Guild icon">
+    <div class="row" id="nav">
+        <div class="col-sm-12 col-md-6">
+            <h2>Discord RoleBot</h2>
+        </div>
+        <div class="offset-md-3 col-md-3">
+            <div class="heading-block justify-content-end" id="user-block">
+                <h4 class="heading-text" id="username">Username</h4>
+                <img src="discord-small.png" class="heading-img rounded-circle" id="avatar-icon" alt="Avatar icon">
+                <span id="logout-triangle">&blacktriangledown;</span>
+            </div>
+        </div>
+    </div>
 
-    <div class="section">
+    <div class="heading-block justify-content-center">
+        <img src="discord-small.png" class="rounded-circle" id="guild-icon" alt="Guild icon">
+    </div>
+
+    <div class="heading-block justify-content-center">
+        <h3 class="heading-text text-center">UMass CICS Community</h3>
+    </div>
+
+    <div class="section text-center" id="controls">
         <button class="btn btn-outline-primary" id="submit-changes">Submit Changes</button>
         <button class="btn btn-outline-danger" id="reset">Reset</button>
     </div>

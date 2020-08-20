@@ -3,6 +3,13 @@ body {
     background-color: #222;
     font-family: 'Montserrat', sans-serif;
 
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version */
+
+    cursor: default;
+
     /*noinspection CssInvalidFunction*/
     padding-bottom: env(safe-area-inset-bottom);
 }
@@ -13,6 +20,11 @@ h1, h2, h3, h4, h5, h6 {
 
 hr {
     border-color: #DDD
+}
+
+img {
+    -webkit-user-drag: none;
+    user-drag: none;
 }
 
 /* secondary gray = #383838 (headers), #303030 (body) */
@@ -46,11 +58,36 @@ hr {
     background-color: #2E2E2E;
 }
 
+.heading-block {
+    display: flex;
+    align-items: center; /* align vertical */
+}
+
+.heading-text {
+    display: inline-block;
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-right: .5rem;
+}
+
+.heading-img {
+    display: inline-block;
+    height: 40px;
+}
+
+#guild-icon {
+    display: block;
+    height: 100px;
+    margin-bottom: 1rem;
+}
+
 .role {
     color: #FFF;
 
     display: inline-block;
     padding: 3px 8px 1px 8px;
+
+    margin-right: 2px;
     margin-bottom: 5px;
 
     border: 1px solid red;
@@ -59,6 +96,15 @@ hr {
 
 .role:not(.restricted):hover {
     cursor: pointer;
+}
+
+#nav {
+    margin: 2rem;
+}
+
+#controls {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
 }
 
 #login-button {
@@ -72,6 +118,14 @@ hr {
 
 #login-button img {
     max-height: 60px;
+}
+
+#logout-triangle {
+    margin-left: 1rem
+}
+
+#user-block:hover {
+    cursor: pointer;
 }
 
 /* Blurple: #7289DA */
