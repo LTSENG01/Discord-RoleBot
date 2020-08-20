@@ -34,6 +34,12 @@ const interdisciplinaryCoursesRegex = /^(business|biology|economics|engineering|
 const hobbiesRegex = /^(projects|hardware|video games|finance|music|travel)/i
 const miscellaneousRegex = /^(snooper|daily coding problems|community events)/i
 
+const regexArray = [restrictedRegex, identityRegex, graduationRegex, residenceRegex, csCoursesRegex, mathCoursesRegex,
+    interdisciplinaryCoursesRegex, hobbiesRegex, miscellaneousRegex]
+
+const categoryArray = ["restricted", "identity", "graduation", "residence", "cS_Courses", "math_Courses",
+    "interdisciplinary_Courses", "hobbies", "miscellaneous"]
+
 interface AccessToken {
     access_token: string,
     token_type: string,
@@ -54,7 +60,8 @@ interface Role {
     id: string,
     name: string,
     color: number,
-    priority: number
+    priority: number,
+    category: string | undefined
 }
 
 interface Guild {
@@ -67,6 +74,15 @@ interface Guild {
     permissions_new: string
 }
 
+function determineRoleCategory(name: string): string {
+    for (const index in regexArray) {
+        if (regexArray[index].test(name)) {
+            return categoryArray[index]
+        }
+    }
+    return ""   // returns an empty string if there is no role
+}
+
 async function getRoles() {
     // requires Bot authorization
     let response = await fetch(DISCORD_API + "guilds/" + GUILD_INFO.id + "/roles", {
@@ -77,31 +93,15 @@ async function getRoles() {
 
     // remove unnecessary role metadata
     let json = await response.json()
-    let roles: Role[] = json.map((item: any) => {
+    return json.map((item: any) => {
         return {
             id: item.id,
             name: item.name,
             color: item.color,
-            priority: item.position
+            priority: item.position,
+            category: determineRoleCategory(item.name)
         }
     })
-
-    // remove useless and restricted roles
-    let unrestrictedRoles = roles.filter(role => !restrictedRegex.test(role.name))
-
-    // organize roles into categories TODO, tag roles instead of by category
-    return {
-        identity: unrestrictedRoles.filter(role => identityRegex.test(role.name)),
-        graduation: unrestrictedRoles.filter(role => graduationRegex.test(role.name)),
-        residence: unrestrictedRoles.filter(role => residenceRegex.test(role.name)),
-        cS_Courses: unrestrictedRoles.filter(role => csCoursesRegex.test(role.name)),
-        math_Courses: unrestrictedRoles.filter(role => mathCoursesRegex.test(role.name)),
-        interdisciplinary_Courses: unrestrictedRoles.filter(role => interdisciplinaryCoursesRegex.test(role.name)),
-        hobbies: unrestrictedRoles.filter(role => hobbiesRegex.test(role.name)),
-        miscellaneous: unrestrictedRoles.filter(role => miscellaneousRegex.test(role.name)),
-        restricted: roles.filter(role => restrictedRegex.test(role.name)),
-        all: roles
-    }
 }
 
 router
@@ -283,7 +283,7 @@ app.use(router.routes())
 app.use(router.allowedMethods())
 
 app.use(async ctx => {
-    ctx.response.headers.set('Cache-Control', 'max-age=604800')
+    // ctx.response.headers.set('Cache-Control', 'max-age=604800') TODO uncomment for production!!!
     await send(ctx, ctx.request.url.pathname, {
         root: `${Deno.cwd()}/static`,
         index: "index.html",

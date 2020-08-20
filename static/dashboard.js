@@ -70,6 +70,14 @@ function decimalToRGB(number) {
     return normalizedColor
 }
 
+/**
+ *
+ * @param role
+ * @param endChar
+ * @param restricted
+ * @param current
+ * @return {string}
+ */
 function generateRoleTemplate(role, endChar="", restricted=false, current=false) {
     const colorArray = decimalToRGB(role.color)
     const color = `rgb(${colorArray[0]}, ${colorArray[1]}, ${colorArray[2]})`
@@ -81,24 +89,20 @@ function generateRoleTemplate(role, endChar="", restricted=false, current=false)
     `
 }
 
-function generateCategoriesAndRoles(rolesObject) {
-    let categories = Object.keys(rolesObject)
-
-    let rolesForCategory = (category) => {
-        return rolesObject[category]
-    }
+/**
+ *
+ */
+function generateAndRenderAssignableRoles(assignableRoles) {
+    const categoryArray = ["identity", "graduation", "residence", "cS_Courses", "math_Courses",
+        "interdisciplinary_Courses", "hobbies", "miscellaneous"]
 
     let categoryCollection = ""
-    categories.map(category => {
-        if (category === "restricted" || category === "all") {
-            return
-        }
-
+    categoryArray.forEach(category => {
         // Uppercase the first character, add a space for every underscore
         const normalizedHeader = category.charAt(0).toUpperCase() + category.replace("_", " ").slice(1)
 
         let roleCollection = ""
-        rolesForCategory(category).map(role => {
+        assignableRoles.filter(role => role.category === category).map(role => {
             roleCollection += generateRoleTemplate(role, "+")
         })
 
@@ -132,7 +136,7 @@ function lookupRole(roles, roleID) {
 
 // generateCurrentRoles(userRoles: string[])     // this is only used when roles are given as strings
 function generateCurrentRoles(userRoles) {
-    let matchingRoles = userRoles.map(roleID => lookupRole(globalRoleMap.assignableRoles.all, roleID))
+    let matchingRoles = userRoles.map(roleID => lookupRole(globalRoleMap.allRoles, roleID))
     let orderedRoles = matchingRoles.sort((a, b) => b.priority - a.priority)
 
     globalRoleMap.currentRoles = orderedRoles   // globalRoleMap.currentRoles: Role[]
@@ -144,7 +148,7 @@ function renderCurrentRoles(currentRoles) {
     let roleCollection = ""
 
     currentRoles.map(role => {
-        if (globalRoleMap.assignableRoles.restricted.find(restrictedRole => restrictedRole.id === role.id)) {
+        if (globalRoleMap.allRoles.find(anyRole => anyRole.category === "restricted" && anyRole.id === role.id)) {
             roleCollection += generateRoleTemplate(role, "", true, true)
         } else {
             roleCollection += generateRoleTemplate(role, "x", false, true)
@@ -176,7 +180,7 @@ async function submitRoleChanges(userID, roleIDsToAdd, roleIDsToRemove) {
 
 let globalRoleMap = {
     currentRoles: [],
-    assignableRoles: { },
+    allRoles: [],
     rolesToAdd: [],
     rolesToRemove: []
 }
@@ -194,11 +198,11 @@ window.onload = async function() {
     }
 
     // Populate global role map
-    globalRoleMap.assignableRoles = await getRoles()
+    globalRoleMap.allRoles = await getRoles()
     globalRoleMap.currentRoles = await getUserRoles(userInfo.id)
 
     // Only "verified" users can use this bot
-    if (!globalRoleMap.currentRoles.find(role => lookupRole(globalRoleMap.assignableRoles.restricted, role).name === "Verified")) {
+    if (!globalRoleMap.currentRoles.find(roleID => lookupRole(globalRoleMap.allRoles, roleID).name === "Verified")) {
         alert("Please read the messages in #welcome and react with a checkmark. If you think there is an error, DM an admin. " +
             "\n\nClick Close to be redirected.")
         redirectBrowser("https://discordapp.com/channels/574287921717182505/695941985206272040/745356434656592013")
@@ -211,7 +215,7 @@ window.onload = async function() {
 
     // Render roles
     generateCurrentRoles(globalRoleMap.currentRoles)
-    generateCategoriesAndRoles(globalRoleMap.assignableRoles)
+    generateAndRenderAssignableRoles(globalRoleMap.allRoles.filter(role => !globalRoleMap.currentRoles.includes(role)))
 
     document.getElementById("submit-changes").addEventListener("click", () => {
         console.log("Submitting changes!")
@@ -250,4 +254,7 @@ window.onload = async function() {
     Add it to rolesToRemove(id
 
      */
+
+    // Assignable roles = All roles - Current roles - Roles to add + Roles to remove
+
 }
