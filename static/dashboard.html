@@ -16,11 +16,16 @@
         <div class="col-sm-12 col-md-6">
             <h2>Discord RoleBot</h2>
         </div>
-        <div class="offset-md-3 col-md-3">
-            <div class="heading-block justify-content-end" id="user-block">
+        <div class="offset-md-3 col-md-3 dropdown">
+            <div class="heading-block justify-content-end dropdown-toggle" id="user-block" data-toggle="dropdown"
+                 aria-haspopup="true" aria-expanded="false" data-offset="-5,10">
                 <h4 class="heading-text" id="username">Username</h4>
                 <img src="discord-small.png" class="heading-img rounded-circle" id="avatar-icon" alt="Avatar icon">
-                <span id="logout-triangle">&blacktriangledown;</span>
+            </div>
+            <div class="dropdown-menu dropdown-menu-right bg-dark" aria-labelledby="user-block">
+                <p class="dropdown-item-text text-secondary">Feedback? Message @LTSENG01#1018</p>
+                <a class="dropdown-item text-primary" href="https://github.com/LTSENG01/Discord-RoleBot" target="_blank">View Source Code</a>
+                <a class="dropdown-item text-danger" href="/logout">Logout</a>
             </div>
         </div>
     </div>
@@ -78,6 +83,7 @@
     </div>
 </div>
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs=" crossorigin="anonymous"></script>
+<script src="bootstrap/js/popper.min.js"></script>
 <script src="bootstrap/js/bootstrap.min.js"></script>
 <script src="dashboard.js" rel="script"></script>
 </body>

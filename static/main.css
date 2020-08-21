@@ -98,6 +98,11 @@ img {
     cursor: pointer;
 }
 
+.dropdown-menu {
+    box-shadow: 0 0 10px 1px #1A1A1A;
+    border-radius: 8px;
+}
+
 #nav {
     margin: 2rem;
 }
@@ -105,6 +110,10 @@ img {
 #controls {
     margin-top: 2rem;
     margin-bottom: 2rem;
+}
+
+#avatar-icon {
+    margin-right: 0.5rem;
 }
 
 #login-button {
