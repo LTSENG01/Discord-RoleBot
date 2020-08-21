@@ -101,6 +101,7 @@ img {
 .dropdown-menu {
     box-shadow: 0 0 10px 1px #1A1A1A;
     border-radius: 8px;
+    font-family: 'Alata', sans-serif;
 }
 
 #nav {

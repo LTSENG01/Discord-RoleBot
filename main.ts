@@ -1,10 +1,13 @@
 import {Application, Router, send} from "https://deno.land/x/oak/mod.ts"
 import {Status} from "https://deno.land/x/oak/deps.ts";
 
+const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 const app = new Application()
 const router = new Router()
 
 const DEBUG = true
+const TEST_GUILD = true
 
 const DISCORD_API = "https://discord.com/api/"
 const DISCORD_CDN = "https://cdn.discordapp.com/"
@@ -20,7 +23,7 @@ const OAUTH_AUTH = `oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${OAUTH
 const OAUTH_TOKEN = "oauth2/token"
 
 const GUILD_INFO = {
-    id: !DEBUG ? "574287921717182505" : "696781447444299826",
+    id: !TEST_GUILD ? "574287921717182505" : "696781447444299826",
     icon: "a_5addd83a4328a1a9772c53d1e6c18978"
 }
 
@@ -225,11 +228,11 @@ router
 
             // sanitize roles (remove restricted roles)
             savePayload.rolesToAdd = savePayload.rolesToAdd.filter(roleID => {
-                return !roles.restricted.some((role: Role) => role.id === roleID)
+                return !roles.some((role: Role) => role.category === "restricted" && role.id === roleID)
             })
 
             savePayload.rolesToRemove = savePayload.rolesToRemove.filter(roleID => {
-                return !roles.restricted.some((role: Role) => role.id === roleID)
+                return !roles.some((role: Role) => role.category === "restricted" && role.id === roleID)
             })
 
             if (savePayload.rolesToAdd.length === 0 && savePayload.rolesToRemove.length === 0) {
@@ -237,16 +240,28 @@ router
                 return
             }
 
+            console.log("USER: " + savePayload.userID)
+            console.log("ADD: " + savePayload.rolesToAdd)
+            console.log("REMOVE: " + savePayload.rolesToRemove)
+
             const roleAPI = `guilds/${GUILD_INFO.id}/members/${savePayload.userID}/roles/` // /{role.id}
 
             // assign roles
             for (const roleID of savePayload.rolesToAdd) {
+                console.log("Waiting...")
+                await wait(1000)
+
                 fetch(DISCORD_API + roleAPI + roleID, {
                     headers: {
-                        'Authorization': "Bot "
+                        'Authorization': "Bot " + BOT_SECRET
                     },
                     method: "PUT"
-                }).then().catch(err => {
+                }).then(res => {
+                    console.log(res.status)
+                    if (res.status === 429) {
+                        // rate limited
+                    }
+                }).catch(err => {
                     console.error(err)
                     ctx.response.status = Status.ServiceUnavailable
                     return
@@ -255,12 +270,18 @@ router
 
             // remove roles
             for (const roleID of savePayload.rolesToRemove) {
+                await wait(1000)
                 fetch(DISCORD_API + roleAPI + roleID, {
                     headers: {
                         'Authorization': "Bot " + BOT_SECRET
                     },
                     method: "DELETE"
-                }).then().catch(err => {
+                }).then(res => {
+                    console.log(res.status)
+                    if (res.status === 429) {
+                        // rate limited
+                    }
+                }).catch(err => {
                     console.error(err)
                     ctx.response.status = Status.ServiceUnavailable
                     return
