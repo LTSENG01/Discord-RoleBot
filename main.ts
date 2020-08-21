@@ -7,7 +7,7 @@ const app = new Application()
 const router = new Router()
 
 const DEBUG = false
-const TEST_GUILD = true
+const TEST_GUILD = false
 
 const DISCORD_API = "https://discord.com/api/"
 const DISCORD_CDN = "https://cdn.discordapp.com/"
@@ -229,6 +229,9 @@ router
         const payload = ctx.request.body()
         if (payload.type == "json") {
             let savePayload: SavePayload = await payload.value
+
+	    // verify identity with accessToken (make sure user is valid!)
+	    // let userVerification = await fetch(DISCORD_API + OAUTHsavePayload.accessToken
 
             // sanitize roles (remove restricted roles)
             savePayload.rolesToAdd = savePayload.rolesToAdd.filter(roleID => {

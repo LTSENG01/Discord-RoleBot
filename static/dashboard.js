@@ -210,7 +210,7 @@ window.onload = async function() {
     }
 
     // Populate global role map
-    globalRoleMap.allRoles = await getRoles()
+    globalRoleMap.allRoles = (await getRoles()).sort((roleA, roleB) => roleA.name > roleB.name ? 1 : -1)
     globalRoleMap.currentRoles = await getUserRoles(userInfo.id)
 
     // Only "verified" users can use this bot
