@@ -139,6 +139,10 @@ router
             body: data,
             headers: headers
         })
+
+	console.log(result.status)
+	console.log(result.statusText)
+
         let accessToken: AccessToken = await result.json()
         console.log("Access Token: " + accessToken.access_token + " " + accessToken.expires_in)
 
@@ -306,7 +310,7 @@ app.use(router.allowedMethods())
 app.use(async ctx => {
     // ctx.response.headers.set('Cache-Control', 'max-age=604800') TODO uncomment for production!!!
     await send(ctx, ctx.request.url.pathname, {
-        root: `${Deno.cwd()}/static`,
+        root: DEBUG ? `${Deno.cwd()}/static` : "/root/git/Discord-RoleBot/static",
         index: "index.html",
     })
 })
