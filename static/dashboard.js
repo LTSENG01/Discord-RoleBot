@@ -243,44 +243,46 @@ window.onload = async function() {
 
     function reassignRoleEventListeners() {
         Array.from(document.getElementsByClassName("role")).forEach(role => {
-            role.addEventListener("click", () => {
-                console.log("clicked! ID: " + role.id)
+            if (!role.classList.contains("restricted")) {
+                role.addEventListener("click", () => {
+                    console.log("clicked! ID: " + role.id)
 
-                // remove a current role
-                if (role.classList.contains("current")) {
-                    // remove the Role from currentRoles
-                    let currentRoleIndex = globalRoleMap.currentRoles.findIndex(r => r.id === role.id)
-                    globalRoleMap.currentRoles.splice(currentRoleIndex, 1)
+                    // remove a current role
+                    if (role.classList.contains("current")) {
+                        // remove the Role from currentRoles
+                        let currentRoleIndex = globalRoleMap.currentRoles.findIndex(r => r.id === role.id)
+                        globalRoleMap.currentRoles.splice(currentRoleIndex, 1)
 
-                    // add to rolesToRemove
-                    globalRoleMap.rolesToRemove.push(role.id)
+                        // add to rolesToRemove
+                        globalRoleMap.rolesToRemove.push(role.id)
 
-                    // remove from rolesToAdd
-                    let index = globalRoleMap.rolesToAdd.indexOf(role.id)
-                    if (index !== -1) {
-                        globalRoleMap.rolesToAdd.splice(index, 1)
+                        // remove from rolesToAdd
+                        let index = globalRoleMap.rolesToAdd.indexOf(role.id)
+                        if (index !== -1) {
+                            globalRoleMap.rolesToAdd.splice(index, 1)
+                        }
+
+                    } else if (role.classList.contains("assignable")) {
+                        // add an assignable role
+                        // add the Role to currentRoles
+                        globalRoleMap.currentRoles.push(lookupRole(globalRoleMap.allRoles, role.id))
+
+                        // add the ID to rolesToAdd
+                        globalRoleMap.rolesToAdd.push(role.id)
+
+                        // remove the ID from rolesToRemove
+                        let index = globalRoleMap.rolesToRemove.indexOf(role.id)
+                        if (index !== -1) {
+                            globalRoleMap.rolesToRemove.splice(index, 1)
+                        }
                     }
 
-                } else if (role.classList.contains("assignable")) {
-                    // add an assignable role
-                    // add the Role to currentRoles
-                    globalRoleMap.currentRoles.push(lookupRole(globalRoleMap.allRoles, role.id))
-
-                    // add the ID to rolesToAdd
-                    globalRoleMap.rolesToAdd.push(role.id)
-
-                    // remove the ID from rolesToRemove
-                    let index = globalRoleMap.rolesToRemove.indexOf(role.id)
-                    if (index !== -1) {
-                        globalRoleMap.rolesToRemove.splice(index, 1)
-                    }
-                }
-
-                // re-render current and assignable roles
-                renderCurrentRoles(globalRoleMap.currentRoles)
-                generateAndRenderAssignableRoles(globalRoleMap.allRoles.filter(r => !globalRoleMap.currentRoles.includes(r)))
-                reassignRoleEventListeners()
-            })
+                    // re-render current and assignable roles
+                    renderCurrentRoles(globalRoleMap.currentRoles)
+                    generateAndRenderAssignableRoles(globalRoleMap.allRoles.filter(r => !globalRoleMap.currentRoles.includes(r)))
+                    reassignRoleEventListeners()
+                })
+            }
         })
     }
 

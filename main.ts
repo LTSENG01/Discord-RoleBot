@@ -309,6 +309,7 @@ app.use(router.allowedMethods())
 
 app.use(async ctx => {
     // ctx.response.headers.set('Cache-Control', 'max-age=604800') TODO uncomment for production!!!
+    console.log("Static: " + ctx.request.url.pathname)
     await send(ctx, ctx.request.url.pathname, {
         root: DEBUG ? `${Deno.cwd()}/static` : "/root/git/Discord-RoleBot/static",
         index: "index.html",
