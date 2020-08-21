@@ -6,7 +6,7 @@ const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 const app = new Application()
 const router = new Router()
 
-const DEBUG = true
+const DEBUG = false
 const TEST_GUILD = true
 
 const DISCORD_API = "https://discord.com/api/"
@@ -17,8 +17,8 @@ const CLIENT_ID = "742765861013553272"
 const CLIENT_SECRET = Deno.env.get("DISCORD_SECRET") ?? ""
 const BOT_SECRET = Deno.env.get("BOT_SECRET") ?? ""
 
-const OAUTH_REDIRECT_URL = DEBUG ? "http://localhost:8000/auth" : "https://discord.ltseng.me/CICSRoleBot/auth"
-const OAUTH_REDIRECT = DEBUG ? "http%3A%2F%2Flocalhost%3A8000%2Fauth" : "https%3A%2F%2Fdiscord.ltseng.me%2FCICSRoleBot%2Fauth"
+const OAUTH_REDIRECT_URL = DEBUG ? "http://localhost:8000/auth" : "https://discord.ltseng.me/auth"
+const OAUTH_REDIRECT = DEBUG ? "http%3A%2F%2Flocalhost%3A8000%2Fauth" : "https%3A%2F%2Fdiscord.ltseng.me%2Fauth"
 const OAUTH_AUTH = `oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${OAUTH_REDIRECT}&response_type=code&scope=identify%20email%20guilds`
 const OAUTH_TOKEN = "oauth2/token"
 
