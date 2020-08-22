@@ -1,5 +1,5 @@
-import {Application, Router, send} from "https://deno.land/x/oak/mod.ts"
-import {Status} from "https://deno.land/x/oak/deps.ts";
+import { Application, Router, RouterContext, send } from "https://deno.land/x/oak/mod.ts"
+import { Status } from "https://deno.land/x/oak/deps.ts"
 
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -7,7 +7,7 @@ const app = new Application()
 const router = new Router()
 
 const DEBUG = false
-const TEST_GUILD = false
+const TEST_GUILD = true
 
 const DISCORD_API = "https://discord.com/api/"
 const DISCORD_CDN = "https://cdn.discordapp.com/"
@@ -107,6 +107,50 @@ async function getRoles() {
     })
 }
 
+/**
+ *
+ * @param ctx
+ * @return string
+ */
+async function getIdentity(ctx: RouterContext) {
+    let accessToken = ctx.cookies.get("discord-access-token") ?? ""
+
+    let identity = await fetch(DISCORD_API + "users/@me", {
+        headers: {
+            'Authorization': "Bearer " + accessToken
+        }
+    })
+    if (identity.status === 401) {
+        ctx.response.status = Status.Unauthorized
+    }
+
+    let guilds = await fetch(DISCORD_API + "users/@me/guilds", {
+        headers: {
+            'Authorization': "Bearer " + accessToken
+        }
+    })
+    if (guilds.status === 401) {
+        ctx.response.status = Status.Unauthorized
+    }
+
+    let userInfo = await identity.json()
+    let guildInfo: Guild[] = await guilds.json()
+
+    let inCorrectGuild = (guildsArray: Guild[], guildID: string) => {
+        return guildsArray.filter(guild => guild["id"] === guildID).length > 0
+    }
+
+    let user: User = {
+        id: userInfo.id,
+        username: userInfo.username,
+        avatar: userInfo.avatar,
+        discriminator: userInfo.discriminator,
+        inCorrectGuild: inCorrectGuild(guildInfo, GUILD_INFO.id)
+    }
+
+    return JSON.stringify(user)
+}
+
 router
     .get("/login", ctx => {
         ctx.response.redirect(DISCORD_API + OAUTH_AUTH)
@@ -155,42 +199,7 @@ router
         }
     })
     .post("/identity", async ctx => {
-        let accessToken = ctx.cookies.get("discord-access-token") ?? ""
-
-        let identity = await fetch(DISCORD_API + "users/@me", {
-            headers: {
-                'Authorization': "Bearer " + accessToken
-            }
-        })
-        if (identity.status === 401) {
-            ctx.response.status = Status.Unauthorized
-        }
-
-        let guilds = await fetch(DISCORD_API + "users/@me/guilds", {
-            headers: {
-                'Authorization': "Bearer " + accessToken
-            }
-        })
-        if (guilds.status === 401) {
-            ctx.response.status = Status.Unauthorized
-        }
-
-        let userInfo = await identity.json()
-        let guildInfo: Guild[] = await guilds.json()
-
-        let inCorrectGuild = (guildsArray: Guild[], guildID: string) => {
-            return guildsArray.filter(guild => guild["id"] === guildID).length > 0
-        }
-
-        let user: User = {
-            id: userInfo.id,
-            username: userInfo.username,
-            avatar: userInfo.avatar,
-            discriminator: userInfo.discriminator,
-            inCorrectGuild: inCorrectGuild(guildInfo, GUILD_INFO.id)
-        }
-
-        ctx.response.body = JSON.stringify(user)
+        ctx.response.body = await getIdentity(ctx)
     })
     .get("/images/:path*", async ctx => {
         if (ctx.params && ctx.params.path) {
@@ -230,8 +239,14 @@ router
         if (payload.type == "json") {
             let savePayload: SavePayload = await payload.value
 
-	    // verify identity with accessToken (make sure user is valid!)
-	    // let userVerification = await fetch(DISCORD_API + OAUTHsavePayload.accessToken
+	        // verify identity (make sure user is properly authenticated)
+            let identityResponse = await getIdentity(ctx)
+            let identity = JSON.parse(identityResponse).id
+
+            if (identity !== savePayload.userID) {
+                ctx.response.status = Status.Unauthorized
+                return
+            }
 
             // sanitize roles (remove restricted roles)
             savePayload.rolesToAdd = savePayload.rolesToAdd.filter(roleID => {
