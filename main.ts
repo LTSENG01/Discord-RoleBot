@@ -6,7 +6,7 @@ const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 const app = new Application()
 const router = new Router()
 
-const DEBUG = false
+const DEBUG = true
 const TEST_GUILD = true
 
 const DISCORD_API = "https://discord.com/api/"
