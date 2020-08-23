@@ -7,7 +7,7 @@ const app = new Application()
 const router = new Router()
 
 const DEBUG = false
-const TEST_GUILD = true
+const TEST_GUILD = false
 
 const DISCORD_API = "https://discord.com/api/"
 const DISCORD_CDN = "https://cdn.discordapp.com/"
@@ -34,7 +34,7 @@ const residenceRegex = /^(zoomer|central|ohill|northeast|southwest|honors|sylvan
 const csCoursesRegex = /^(cs|cics|info)/i
 const mathCoursesRegex = /^(math|stat)/i
 const interdisciplinaryCoursesRegex = /^(business|biology|economics|engineering|linguistics|psychology|informatics|physics)/i
-const hobbiesRegex = /^(projects|hardware|video games|finance|music|travel)/i
+const hobbiesRegex = /^(personal projects|hardware|video games|personal finance|music|travel)/i
 const miscellaneousRegex = /^(snooper|daily coding problems|community events)/i
 
 const regexArray = [restrictedRegex, identityRegex, graduationRegex, residenceRegex, csCoursesRegex, mathCoursesRegex,
