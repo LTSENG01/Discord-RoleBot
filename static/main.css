@@ -108,6 +108,11 @@ img {
     margin: 2rem;
 }
 
+#privacy {
+    margin-top: 4rem;
+    font-size: 14px;
+}
+
 #controls {
     margin-top: 2rem;
     margin-bottom: 2rem;
@@ -118,12 +123,18 @@ img {
 }
 
 #login-button {
-    background-color: #7289DA;
+    background-color: #7289da;
     border-radius: 15px;
+    box-shadow: 3px 3px 3px #465688;
 }
 
 #login-button:hover {
-    background-color: #6674a7;
+    background-color: #5e73b7;
+}
+
+#login-button:active {
+    background-color: #465688;
+    box-shadow: none;
 }
 
 #login-button img {
@@ -139,3 +150,9 @@ img {
 }
 
 /* Blurple: #7289DA */
+
+@media only screen and (min-width: 450px) {
+    #privacy {
+        max-width: 70%;
+    }
+}
