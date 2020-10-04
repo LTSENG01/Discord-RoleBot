@@ -1,5 +1,4 @@
-import { Application, Router, RouterContext, send } from "https://deno.land/x/oak/mod.ts"
-import { Status } from "https://deno.land/x/oak/deps.ts"
+import { Application, Router, RouterContext, send, Status } from "./deps.ts"
 
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -326,7 +325,7 @@ app.use(router.routes())
 app.use(router.allowedMethods())
 
 app.use(async ctx => {
-    // ctx.response.headers.set('Cache-Control', 'max-age=604800') TODO uncomment for production!!!
+    // ctx.response.headers.set('Cache-Control', 'max-age=604800')
     console.log("Static: " + ctx.request.url.pathname)
     await send(ctx, ctx.request.url.pathname, {
         root: DEBUG ? `${Deno.cwd()}/static` : "/root/git/Discord-RoleBot/static",
