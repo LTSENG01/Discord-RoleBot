@@ -1,0 +1,45 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Deploy to DigitalOcean and Run Application
+
+on:
+  push:
+    branches: [ master ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "deploy"
+  deploy:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+         
+      - name: SSH Deploy
+        uses: easingthemes/ssh-deploy@v2.1.5
+        with:
+            # Private Key
+            SSH_PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+            # Remote host
+            REMOTE_HOST: ${{ secrets.HOST }}
+            # Remote user
+            REMOTE_USER: ${{ secrets.USER }}
+            # Source directory
+            SOURCE: $GITHUB_WORKSPACE
+            # Target directory
+            TARGET: ${{ secrets.TARGET_DIR }}
+#             # Arguments to pass to rsync
+#             ARGS: # optional, default is -rltgoDzvO
+            
+      - name: Reload PM2 Remotely
+        uses: appleboy/ssh-action@master
+        with:
+            host: ${{ secrets.HOST }}
+            username: ${{ secrets.USER }}
+            key: ${{ secrets.PRIVATE_KEY }}
+            script: |
+              pm2 reload discord-rolebot
+
