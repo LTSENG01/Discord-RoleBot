@@ -25,8 +25,6 @@ jobs:
             SSH_PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
             # Remote host
             REMOTE_HOST: ${{ secrets.DROPLET_IP }}
-            # Passphrase
-            PASSPHRASE: ${{ secrets.PASSPHRASE }}
             # Remote user
             REMOTE_USER: ${{ secrets.USER }}
             # Source directory
@@ -42,7 +40,6 @@ jobs:
             host: ${{ secrets.DROPLET_IP }}
             username: ${{ secrets.USER }}
             key: ${{ secrets.PRIVATE_KEY }}
-            passphrase: ${{ secrets.PASSPHRASE }}
             script: |
               pm2 reload discord-rolebot
 
