@@ -28,7 +28,7 @@ jobs:
             # Remote user
             REMOTE_USER: ${{ secrets.USER }}
             # Source directory
-            SOURCE: $GITHUB_WORKSPACE
+            SOURCE: ""
             # Target directory
             TARGET: ${{ secrets.TARGET_DIR }}
 #             # Arguments to pass to rsync
