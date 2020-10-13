@@ -27,8 +27,6 @@ jobs:
             REMOTE_HOST: ${{ secrets.DROPLET_IP }}
             # Remote user
             REMOTE_USER: ${{ secrets.USER }}
-            # Source directory
-            SOURCE: ""
             # Target directory
             TARGET: ${{ secrets.TARGET_DIR }}
 #             # Arguments to pass to rsync
