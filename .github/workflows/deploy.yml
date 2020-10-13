@@ -20,7 +20,7 @@ jobs:
 
       - name: SSH Deploy
         uses: AEnterprise/rsync-deploy@v1.0
-        with:
+        env:
             # Private Key
             DEPLOY_KEY: ${{ secrets.PRIVATE_KEY }}
             # Remote host
