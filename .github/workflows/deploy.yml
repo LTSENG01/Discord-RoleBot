@@ -27,6 +27,8 @@ jobs:
             REMOTE_HOST: ${{ secrets.DROPLET_IP }}
             # Remote user
             REMOTE_USER: ${{ secrets.USER }}
+            # Source
+            SOURCE: "/home/runner/work/Discord-RoleBot"
             # Target directory
             TARGET: ${{ secrets.TARGET_DIR }}
 #             # Arguments to pass to rsync
