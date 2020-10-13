@@ -19,20 +19,18 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: SSH Deploy
-        uses: easingthemes/ssh-deploy@v2.1.5
+        uses: AEnterprise/rsync-deploy@v1.0
         with:
             # Private Key
-            SSH_PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+            DEPLOY_KEY: ${{ secrets.PRIVATE_KEY }}
             # Remote host
-            REMOTE_HOST: ${{ secrets.DROPLET_IP }}
+            SERVER_IP: ${{ secrets.DROPLET_IP }}
             # Remote user
-            REMOTE_USER: ${{ secrets.USER }}
+            USERNAME: ${{ secrets.USER }}
             # Source
-            SOURCE: "/"
+            FOLDER: "./"
             # Target directory
-            TARGET: ${{ secrets.TARGET_DIR }}
-#             # Arguments to pass to rsync
-#             ARGS: # optional, default is -rltgoDzvO
+            SERVER_DESTINATION: ${{ secrets.TARGET_DIR }}
 
       - name: Reload PM2 Remotely
         uses: appleboy/ssh-action@master
