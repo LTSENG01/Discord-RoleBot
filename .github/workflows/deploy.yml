@@ -31,6 +31,8 @@ jobs:
             FOLDER: "./"
             # Target directory
             SERVER_DESTINATION: ${{ secrets.TARGET_DIR }}
+            ARGS: "-e -c -r --delete"
+            SERVER_PORT: 22
 
       - name: Reload PM2 Remotely
         uses: appleboy/ssh-action@master
