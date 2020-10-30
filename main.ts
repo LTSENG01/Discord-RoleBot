@@ -28,12 +28,12 @@ const GUILD_INFO = {
 
 const restrictedRegex = /(server|verified|@everyone|umass cics|cics role bot|admin|moderator|professor|uca|\bta\b|----)/i
 const identityRegex = /^(he\/him|she\/her|they\/them|ze\/hir)/i
-const graduationRegex = /^(alumni|graduate student|class of \d{4})/i
+const graduationRegex = /^(alumni|graduate student|class of \d{4}|international)/i
 const residenceRegex = /^(zoomer|central|ohill|northeast|southwest|honors|sylvan|off-campus|rap data science|rap ethics society)/i
 const csCoursesRegex = /^(cs|cics|info)/i
 const mathCoursesRegex = /^(math|stat)/i
-const interdisciplinaryCoursesRegex = /^(business|biology|economics|engineering|linguistics|psychology|informatics|physics)/i
-const hobbiesRegex = /^(personal projects|hardware|video games|personal finance|music|travel|food|sports|pet pics|anime)/i
+const interdisciplinaryCoursesRegex = /^(business|biology|economics|engineering|linguistics|psychology|informatics|physics|chemistry)/i
+const hobbiesRegex = /^(personal projects|hardware|video games|personal finance|music|travel)/i
 const miscellaneousRegex = /^(snooper|daily coding problems|community events)/i
 
 const regexArray = [restrictedRegex, identityRegex, graduationRegex, residenceRegex, csCoursesRegex, mathCoursesRegex,
