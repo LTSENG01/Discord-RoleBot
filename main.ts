@@ -198,8 +198,10 @@ router
         console.log("Access Token: " + accessToken.access_token + " " + accessToken.expires_in)
 
         if (regex.test(accessToken.access_token)) {
-            ctx.cookies.set("discord-access-token", accessToken.access_token)
-            ctx.cookies.set("discord-token-expiration", Date.now().toString())  // todo cookie math
+            ctx.cookies.set("discord-access-token", accessToken.access_token, {
+                secure: true,
+                sameSite: "strict"
+            })
             ctx.response.redirect("/dashboard.html")
         } else {
             ctx.response.status = Status.BadRequest
