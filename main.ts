@@ -26,7 +26,7 @@ const GUILD_INFO = {
     icon: "a_5addd83a4328a1a9772c53d1e6c18978"
 }
 
-const restrictedRegex = /(server|verified|@everyone|umass cics|cics role bot|admin|moderator|professor|uca|\bta\b|----)/i
+const restrictedRegex = /(server|verified|@everyone|umass cics|cics role bot|admin|moderator|bot contributor|professor|uca|\bta\b|----)/i
 const identityRegex = /^(he\/him|she\/her|they\/them|ze\/hir)/i
 const graduationRegex = /^(alumni|graduate student|class of \d{4}|international)/i
 const residenceRegex = /^(zoomer|central|ohill|northeast|southwest|honors|sylvan|off-campus|rap data science|rap ethics society)/i
@@ -121,6 +121,8 @@ async function getIdentity(ctx: RouterContext) {
     })
     if (identity.status === 401) {
         ctx.response.status = Status.Unauthorized
+        ctx.response.redirect("/bad-auth.html")
+        return ""
     }
 
     let guilds = await fetch(DISCORD_API + "users/@me/guilds", {
@@ -162,6 +164,12 @@ router
         let check = regex.test(code)
         console.log("AUTH: code=" + code + " CHECK: " + check)
 
+        // authorization code is bad
+        if (!check) {
+            ctx.response.redirect("/bad-auth.html")
+            return
+        }
+
         let data = new URLSearchParams({
             client_id: CLIENT_ID,
             client_secret: CLIENT_SECRET,
@@ -183,8 +191,8 @@ router
             headers: headers
         })
 
-	console.log(result.status)
-	console.log(result.statusText)
+        console.log(result.status)
+        console.log(result.statusText)
 
         let accessToken: AccessToken = await result.json()
         console.log("Access Token: " + accessToken.access_token + " " + accessToken.expires_in)
@@ -195,6 +203,8 @@ router
             ctx.response.redirect("/dashboard.html")
         } else {
             ctx.response.status = Status.BadRequest
+            ctx.response.redirect("/bad-auth.html")
+            return
         }
     })
     .post("/identity", async ctx => {
@@ -215,6 +225,8 @@ router
                     'Authorization': "Bot " + BOT_SECRET
                 }
             })
+
+            // todo need to verify identity?
 
             ctx.response.body = await response.json()
         }
@@ -240,6 +252,12 @@ router
 
 	        // verify identity (make sure user is properly authenticated)
             let identityResponse = await getIdentity(ctx)
+            if (identityResponse == "") {
+                ctx.response.status = Status.Unauthorized
+                ctx.response.redirect("/bad-auth.html")
+                return
+            }
+
             let identity = JSON.parse(identityResponse).id
 
             if (identity !== savePayload.userID) {
@@ -326,7 +344,6 @@ app.use(router.allowedMethods())
 
 app.use(async ctx => {
     // ctx.response.headers.set('Cache-Control', 'max-age=604800')
-    console.log("Static: " + ctx.request.url.pathname)
     await send(ctx, ctx.request.url.pathname, {
         root: DEBUG ? `${Deno.cwd()}/static` : "/root/git/Discord-RoleBot/static",
         index: "index.html",
