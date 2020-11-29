@@ -5,8 +5,8 @@ const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 const app = new Application()
 const router = new Router()
 
-const DEBUG = true
-const TEST_GUILD = true
+const DEBUG = false
+const TEST_GUILD = false
 
 const DISCORD_API = "https://discord.com/api/"
 const DISCORD_CDN = "https://cdn.discordapp.com/"
