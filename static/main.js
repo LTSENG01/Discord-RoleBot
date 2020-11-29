@@ -12,7 +12,7 @@ async function getGuildAvatar(guildID, iconID) {
     return await image.text()
 }
 
-window.onload = async function () {
+window.onload = async function() {
     let guildImageURL = await getGuildAvatar("574287921717182505", "a_5addd83a4328a1a9772c53d1e6c18978")
     document.getElementById("guild-icon").setAttribute("src", guildImageURL)
 }
