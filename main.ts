@@ -199,7 +199,7 @@ router
 
         if (regex.test(accessToken.access_token)) {
             ctx.cookies.set("discord-access-token", accessToken.access_token, {
-                secure: true,
+                secure: !DEBUG,
                 sameSite: "strict"
             })
             ctx.response.redirect("/dashboard.html")
