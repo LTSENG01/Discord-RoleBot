@@ -4,8 +4,12 @@ async function getUserInfo() {
     let response = await fetch("/identity", {
         method: "POST"
     })
+    if (response.redirected) {
+        redirectBrowser(response.url)
+    }
     if (response.status !== 200) {
         // Show message as a Bootstrap alert, redirect in __ seconds.
+        console.error("Failed to retrieve user info!")
         redirectBrowser("/")
     }
     return await response.json()
@@ -16,6 +20,7 @@ async function getRoles() {
     let response = await fetch("/roles", {
         method: "POST"
     })
+
     if (response.status === 401) {
         // Show message as a Bootstrap alert, redirect in __ seconds.
         redirectBrowser("/login")
@@ -26,7 +31,7 @@ async function getRoles() {
 // getUserRoles(userID: string): string[]
 async function getUserRoles(userID) {
     console.log("Getting user roles.")
-    let response = await fetch(`/userroles/${userID}`)
+    let response = await fetch(`/userroles/${userID}`)  // todo check for identity
     return (await response.json())["roles"]
 }
 
@@ -181,10 +186,12 @@ async function submitRoleChanges(userID, roleIDsToAdd, roleIDsToRemove) {
             rolesToRemove: roleIDsToRemove
         })
     })
-    if (response.status === 200) {
-        location.reload()   // refreshes the webpage
-    } else {
+    if (response.redirected) {
+        redirectBrowser(response.url)
+    } else if (response.status !== 200) {
         alert("There was an issue saving your role changes. Please try again.\n\n" + response.status + ": " + response.statusText)
+    } else {
+        location.reload()   // refreshes the webpage
     }
 }
 
