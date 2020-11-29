@@ -121,6 +121,8 @@ async function getIdentity(ctx: RouterContext) {
     })
     if (identity.status === 401) {
         ctx.response.status = Status.Unauthorized
+        ctx.response.redirect("/bad-auth.html")
+        return ""
     }
 
     let guilds = await fetch(DISCORD_API + "users/@me/guilds", {
@@ -201,6 +203,8 @@ router
             ctx.response.redirect("/dashboard.html")
         } else {
             ctx.response.status = Status.BadRequest
+            ctx.response.redirect("/bad-auth.html")
+            return
         }
     })
     .post("/identity", async ctx => {
@@ -221,6 +225,8 @@ router
                     'Authorization': "Bot " + BOT_SECRET
                 }
             })
+
+            // todo need to verify identity?
 
             ctx.response.body = await response.json()
         }
@@ -246,6 +252,12 @@ router
 
 	        // verify identity (make sure user is properly authenticated)
             let identityResponse = await getIdentity(ctx)
+            if (identityResponse == "") {
+                ctx.response.status = Status.Unauthorized
+                ctx.response.redirect("/bad-auth.html")
+                return
+            }
+
             let identity = JSON.parse(identityResponse).id
 
             if (identity !== savePayload.userID) {
