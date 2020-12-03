@@ -1,0 +1,20 @@
+{
+  "config": {
+    "bot": {
+      "client_id": "742765861013553272"
+
+    },
+    "guild": {
+      "guild_id": "574287921717182505",
+      "guild_icon": "(may not be needed) a_5addd83a4328a1a9772c53d1e6c18978",
+      "category_regexes": {
+        "restricted": "(server|verified|@everyone|umass cics|cics role bot|admin|moderator|professor|uca|\bta\b|----)/i",
+        "identity": "^(he\/him|she\/her|they\/them|ze\/hir)/i"
+      }
+    },
+    "server": {
+      "port": 8000,
+      "static_files_path": ""
+    }
+  }
+}

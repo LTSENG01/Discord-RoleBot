@@ -201,7 +201,7 @@ router
             ctx.cookies.set("discord-access-token", accessToken.access_token, {
                 secure: !DEBUG,
                 sameSite: "strict"
-            })
+            })      // todo BUGGY
             ctx.response.redirect("/dashboard.html")
         } else {
             ctx.response.status = Status.BadRequest
