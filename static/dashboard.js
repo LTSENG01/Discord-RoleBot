@@ -98,7 +98,7 @@ function generateRoleTemplate(role, endChar="", restricted=false, current=false)
  *
  */
 function generateAndRenderAssignableRoles(assignableRoles) {
-    const categoryArray = ["identity", "graduation", "residence", "cS_Courses", "math_Courses",
+    const categoryArray = ["identity", "graduation", "concentration", "residence", "cS_Courses", "math_Courses",
         "interdisciplinary_Courses", "hobbies", "miscellaneous"]
 
     let categoryCollection = ""
