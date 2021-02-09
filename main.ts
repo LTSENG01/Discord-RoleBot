@@ -26,9 +26,10 @@ const GUILD_INFO = {
     icon: "a_5addd83a4328a1a9772c53d1e6c18978"
 }
 
-const restrictedRegex = /(server|verified|@everyone|umass cics|cics role bot|admin|moderator|bot contributor|professor|uca|\bta\b|----)/i
+const restrictedRegex = /(server|verified|@everyone|umass cics|cics role bot|admin|moderator|bot contributor|professor|uca|\bta\b|class liaison|club officer|----)/i
 const identityRegex = /^(he\/him|she\/her|they\/them|ze\/hir)/i
 const graduationRegex = /^(alumni|graduate student|class of \d{4}|international)/i
+const concentrationRegex = /^(computer science|informatics|mathematics and statistics|computer engineering|non-cs \(other\))/i
 const residenceRegex = /^(zoomer|central|ohill|northeast|southwest|honors|sylvan|off-campus|rap data science|rap ethics society)/i
 const csCoursesRegex = /^(cs|cics|info)/i
 const mathCoursesRegex = /^(math|stat)/i
@@ -36,10 +37,10 @@ const interdisciplinaryCoursesRegex = /^(business|biology|economics|engineering|
 const hobbiesRegex = /^(personal projects|hardware|video games|personal finance|music|travel|food|fitness|linux|sports|pet pics|anime)/i
 const miscellaneousRegex = /^(snooper|daily coding problems|community events)/i
 
-const regexArray = [restrictedRegex, identityRegex, graduationRegex, residenceRegex, csCoursesRegex, mathCoursesRegex,
-    interdisciplinaryCoursesRegex, hobbiesRegex, miscellaneousRegex]
+const regexArray = [restrictedRegex, identityRegex, graduationRegex, concentrationRegex, residenceRegex, csCoursesRegex,
+    mathCoursesRegex, interdisciplinaryCoursesRegex, hobbiesRegex, miscellaneousRegex]
 
-const categoryArray = ["restricted", "identity", "graduation", "residence", "cS_Courses", "math_Courses",
+const categoryArray = ["restricted", "identity", "graduation", "concentration", "residence", "cS_Courses", "math_Courses",
     "interdisciplinary_Courses", "hobbies", "miscellaneous"]
 
 interface AccessToken {
