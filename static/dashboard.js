@@ -220,12 +220,12 @@ window.onload = async function() {
     globalRoleMap.allRoles = (await getRoles()).sort((roleA, roleB) => roleA.name > roleB.name ? 1 : -1)
     globalRoleMap.currentRoles = await getUserRoles(userInfo.id)
 
-    // Only "verified" users can use this bot
-    if (!globalRoleMap.currentRoles.find(roleID => lookupRole(globalRoleMap.allRoles, roleID).name === "Verified")) {
-        alert("Please read the messages in #welcome and react with a checkmark. If you think there is an error, DM an admin. " +
-            "\n\nClick Close to be redirected.")
-        redirectBrowser("https://discordapp.com/channels/574287921717182505/695941985206272040/745356434656592013")
-    }
+    // // Only "verified" users can use this bot
+    // if (!globalRoleMap.currentRoles.find(roleID => lookupRole(globalRoleMap.allRoles, roleID).name === "Verified")) {
+    //     alert("Please read the messages in #welcome and react with a checkmark. If you think there is an error, DM an admin. " +
+    //         "\n\nClick Close to be redirected.")
+    //     redirectBrowser("https://discordapp.com/channels/574287921717182505/695941985206272040/745356434656592013")
+    // }
 
     // Set identity details
     document.getElementById("username").innerText = userInfo.username + "#" + userInfo.discriminator
