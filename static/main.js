@@ -14,7 +14,7 @@ async function getGuildAvatar(guildID, iconID) {
 }
 
 window.onload = async function() {
-    const newImage = "a_6d9390fadb6bc1fa5a59ede9cdfe26b6";
-    let guildImageURL = await getGuildAvatar("574287921717182505", newImage);
+    const iconId = "a_6d9390fadb6bc1fa5a59ede9cdfe26b6";
+    let guildImageURL = await getGuildAvatar("574287921717182505", iconId);
     document.getElementById("guild-icon").setAttribute("src", guildImageURL);
 }
