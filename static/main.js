@@ -8,11 +8,13 @@ async function getGuildAvatar(guildID, iconID) {
     } else {
         path = `icons/${guildID}/${iconID}.png`
     }
-    let image = await fetch(`/images/${path}`)
+    let image = await fetch(`/images/${path}`);
+    console.log(`image path is :${path}`);
     return await image.text()
 }
 
 window.onload = async function() {
-    let guildImageURL = await getGuildAvatar("574287921717182505", "a_5addd83a4328a1a9772c53d1e6c18978")
-    document.getElementById("guild-icon").setAttribute("src", guildImageURL)
+    const newImage = "a_6d9390fadb6bc1fa5a59ede9cdfe26b6";
+    let guildImageURL = await getGuildAvatar("574287921717182505", newImage);
+    document.getElementById("guild-icon").setAttribute("src", guildImageURL);
 }
