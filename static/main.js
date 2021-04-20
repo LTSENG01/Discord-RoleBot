@@ -1,6 +1,6 @@
 async function getGuildAvatar(guildID, iconID) {
     console.log("Getting guild icon.")
-    let path
+    let path;
 
     // checks if the icon is animated or not
     if (/^a_/.test(iconID)) {
@@ -8,11 +8,13 @@ async function getGuildAvatar(guildID, iconID) {
     } else {
         path = `icons/${guildID}/${iconID}.png`
     }
-    let image = await fetch(`/images/${path}`)
-    return await image.text()
+    let imageTxt = await fetch(`/images/${path}`).then(val => val.text(),val => "discord-small.png");
+    console.log(`image path is :${imageTxt}`);
+    return imageTxt;
 }
 
 window.onload = async function() {
-    let guildImageURL = await getGuildAvatar("574287921717182505", "a_5addd83a4328a1a9772c53d1e6c18978")
-    document.getElementById("guild-icon").setAttribute("src", guildImageURL)
+    const iconId = "a_6d9390fadb6bc1fa5a59ede9cdfe26b6";
+    let guildImageURL = await getGuildAvatar("574287921717182505", iconId);
+    document.getElementById("guild-icon").setAttribute("src", guildImageURL);
 }
