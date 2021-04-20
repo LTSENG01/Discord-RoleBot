@@ -208,7 +208,9 @@ window.onload = async function() {
 
     let userInfo = await getUserInfo()
     let userImageURL = await getUserAvatar(userInfo.id, userInfo.avatar)
-    let guildImageURL = await getGuildAvatar("574287921717182505", "a_5addd83a4328a1a9772c53d1e6c18978")
+
+    const iconId = "a_6d9390fadb6bc1fa5a59ede9cdfe26b6";
+    let guildImageURL = await getGuildAvatar("574287921717182505", iconId);
 
     // Only members of this guild can use this bot
     if (!userInfo.inCorrectGuild) {
