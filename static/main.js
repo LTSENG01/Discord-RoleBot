@@ -8,7 +8,7 @@ async function getGuildAvatar(guildID, iconID) {
     } else {
         path = `icons/${guildID}/${iconID}.png`
     }
-    let imageTxt = await fetch(`/images/${path}`).then(val => val.text(),val => "discord-small.png");
+    let imageTxt = await fetch(`/images/${path}`).then(val => val.text(), () => "discord-small.png");
     console.log(`image path is :${imageTxt}`);
     return imageTxt;
 }

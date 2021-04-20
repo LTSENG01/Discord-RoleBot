@@ -44,7 +44,7 @@ async function getUserAvatar(userID, avatarID) {
 
 async function getGuildAvatar(guildID, iconID) {
     console.log("Getting guild icon.")
-    let path
+    let path;
 
     // checks if the icon is animated or not
     if (/^a_/.test(iconID)) {
@@ -52,8 +52,9 @@ async function getGuildAvatar(guildID, iconID) {
     } else {
         path = `icons/${guildID}/${iconID}.png`
     }
-    let image = await fetch(`/images/${path}`)
-    return await image.text()
+    let imageTxt = await fetch(`/images/${path}`).then(val => val.text(), () => "discord-small.png");
+    console.log(`image path is :${imageTxt}`);
+    return imageTxt;
 }
 
 function redirectBrowser(location) {
