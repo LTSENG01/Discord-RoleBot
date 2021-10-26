@@ -293,11 +293,13 @@ router
 
                 fetch(DISCORD_API + roleAPI + roleID, {
                     headers: {
-                        'Authorization': "Bot " + BOT_SECRET
+                        'Authorization': "Bot " + BOT_SECRET,
+			'Content-Length': '0'
                     },
                     method: "PUT"
                 }).then(res => {
                     console.log(res.status)
+		    res.text().then(console.log)
                     if (res.status === 429) {
                         // rate limited
                     }
@@ -318,6 +320,7 @@ router
                     method: "DELETE"
                 }).then(res => {
                     console.log(res.status)
+		    console.log(res.body)
                     if (res.status === 429) {
                         // rate limited
                     }
