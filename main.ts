@@ -202,8 +202,8 @@ router
         console.log("Access Token: " + accessToken.access_token + " " + accessToken.expires_in)
 
         if (regex.test(accessToken.access_token)) {
-            ctx.cookies.set("discord-access-token", accessToken.access_token)
-            ctx.cookies.set("discord-token-expiration", Date.now().toString())  // todo cookie math
+            await ctx.cookies.set("discord-access-token", accessToken.access_token)
+            await ctx.cookies.set("discord-token-expiration", Date.now().toString())  // todo cookie math
             ctx.response.redirect("/dashboard.html")
         } else {
             ctx.response.status = Status.BadRequest
@@ -288,29 +288,37 @@ router
             console.log("REMOVE: " + savePayload.rolesToRemove)
 
             const roleAPI = `guilds/${GUILD_INFO.id}/members/${savePayload.userID}/roles/` // /{role.id}
+            console.log("accessing endpoint: " + roleAPI)
 
             // assign roles
             for (const roleID of savePayload.rolesToAdd) {
                 console.log("Waiting...")
                 await wait(1000)
 
-                fetch(DISCORD_API + roleAPI + roleID, {
+                console.log("PUT: " + DISCORD_API + roleAPI + roleID)
+
+                const options = {
                     headers: {
                         'Authorization': "Bot " + BOT_SECRET,
-			'Content-Length': '0'
+                        'Content-Length': '0'
                     },
-                    method: "PUT"
-                }).then(res => {
-                    console.log(res.status)
-		    res.text().then(console.log)
-                    if (res.status === 429) {
-                        // rate limited
-                    }
-                }).catch(err => {
-                    console.error(err)
-                    ctx.response.status = Status.ServiceUnavailable
-                    return
-                })
+                    method: "PUT",
+                    body: null
+                }
+
+                fetch(DISCORD_API + roleAPI + roleID, options)
+                    .then(res => {
+                        console.log(res.status)
+                        res.text().then(console.log)
+                        if (res.status === 429) {
+                            // rate limited
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err)
+                        ctx.response.status = Status.ServiceUnavailable
+                        return
+                    })
             }
 
             // remove roles
@@ -323,7 +331,7 @@ router
                     method: "DELETE"
                 }).then(res => {
                     console.log(res.status)
-		    console.log(res.body)
+		            console.log(res.body)
                     if (res.status === 429) {
                         // rate limited
                     }
@@ -334,7 +342,7 @@ router
                 })
             }
 
-            console.log("SAVE: " + payload)
+            // console.log("SAVE: " + payload)
             ctx.response.status = Status.OK
         } else {
             console.error("Bad payload received. " + payload.type)
