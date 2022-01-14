@@ -26,7 +26,7 @@ const GUILD_INFO = {
     icon: "a_5addd83a4328a1a9772c53d1e6c18978"
 }
 
-const restrictedRegex = /(server|verified|@everyone|umass cics|cics role bot|cics utility|admin|moderator|bot contributor|professor|uca|\bta\b|class liaison|club officer|----)/i
+const restrictedRegex = /(server|verified|@everyone|umass cics|cics role bot|cics utility|admin|moderator|bot contributor|instructor|uca|\bta\b|class liaison|club officer|----)/i
 const identityRegex = /^(he\/him|she\/her|they\/them|ze\/hir)/i
 const graduationRegex = /^(alumni|graduate student|class of \d{4}|international)/i
 const concentrationRegex = /^(computer science|informatics|mathematics and statistics|computer engineering|non-cs \(other\))/i
@@ -294,11 +294,13 @@ router
 
                 fetch(DISCORD_API + roleAPI + roleID, {
                     headers: {
-                        'Authorization': "Bot " + BOT_SECRET
+                        'Authorization': "Bot " + BOT_SECRET,
+			'Content-Length': '0'
                     },
                     method: "PUT"
                 }).then(res => {
                     console.log(res.status)
+		    res.text().then(console.log)
                     if (res.status === 429) {
                         // rate limited
                     }
@@ -319,6 +321,7 @@ router
                     method: "DELETE"
                 }).then(res => {
                     console.log(res.status)
+		    console.log(res.body)
                     if (res.status === 429) {
                         // rate limited
                     }
