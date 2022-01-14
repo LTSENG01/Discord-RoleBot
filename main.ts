@@ -1,11 +1,11 @@
-import { Application, Router, RouterContext, send, Status } from "./deps.ts"
+import { Application, Router, Response, Cookies, send, Status } from "./deps.ts"
 
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 const app = new Application()
 const router = new Router()
 
-const DEBUG = false
+const DEBUG = true
 const TEST_GUILD = false
 
 const DISCORD_API = "https://discord.com/api/"
@@ -34,7 +34,7 @@ const residenceRegex = /^(zoomer|central|ohill|northeast|southwest|honors|sylvan
 const csCoursesRegex = /^(cs|cics|info)/i
 const mathCoursesRegex = /^(math|stat)/i
 const interdisciplinaryCoursesRegex = /^(business|biology|economics|engineering|linguistics|psychology|informatics|physics|chemistry)/i
-const hobbiesRegex = /^(personal projects|hardware|video games|personal finance|music|travel|food|fitness|linux|sports|pet pics|anime|outfits)/i
+const hobbiesRegex = /^(personal projects|hardware|video games|personal finance|music|travel|food|fitness|linux|sports|pet pics|anime|outfits|books)/i
 const miscellaneousRegex = /^(snooper|daily coding problems|community events)/i
 
 const regexArray = [restrictedRegex, identityRegex, graduationRegex, concentrationRegex, residenceRegex, csCoursesRegex,
@@ -88,14 +88,14 @@ function determineRoleCategory(name: string): string {
 
 async function getRoles() {
     // requires Bot authorization
-    let response = await fetch(DISCORD_API + "guilds/" + GUILD_INFO.id + "/roles", {
+    const response = await fetch(DISCORD_API + "guilds/" + GUILD_INFO.id + "/roles", {
         headers: {
             'Authorization': "Bot " + BOT_SECRET
         }
     })
 
     // remove unnecessary role metadata
-    let json = await response.json()
+    const json = await response.json()
     return json.map((item: any) => {
         return {
             id: item.id,
@@ -109,40 +109,41 @@ async function getRoles() {
 
 /**
  *
- * @param ctx
  * @return string
+ * @param cookies
+ * @param response
  */
-async function getIdentity(ctx: RouterContext) {
-    let accessToken = ctx.cookies.get("discord-access-token") ?? ""
+async function getIdentity(cookies: Cookies, response: Response) {
+    const accessToken = cookies.get("discord-access-token") ?? ""
 
-    let identity = await fetch(DISCORD_API + "users/@me", {
+    const identity = await fetch(DISCORD_API + "users/@me", {
         headers: {
             'Authorization': "Bearer " + accessToken
         }
     })
     if (identity.status === 401) {
-        ctx.response.status = Status.Unauthorized
-        ctx.response.redirect("/bad-auth.html")
+        response.status = Status.Unauthorized
+        response.redirect("/bad-auth.html")
         return ""
     }
 
-    let guilds = await fetch(DISCORD_API + "users/@me/guilds", {
+    const guilds = await fetch(DISCORD_API + "users/@me/guilds", {
         headers: {
             'Authorization': "Bearer " + accessToken
         }
     })
     if (guilds.status === 401) {
-        ctx.response.status = Status.Unauthorized
+        response.status = Status.Unauthorized
     }
 
-    let userInfo = await identity.json()
-    let guildInfo: Guild[] = await guilds.json()
+    const userInfo = await identity.json()
+    const guildInfo: Guild[] = await guilds.json()
 
-    let inCorrectGuild = (guildsArray: Guild[], guildID: string) => {
+    const inCorrectGuild = (guildsArray: Guild[], guildID: string) => {
         return guildsArray.filter(guild => guild["id"] === guildID).length > 0
     }
 
-    let user: User = {
+    const user: User = {
         id: userInfo.id,
         username: userInfo.username,
         avatar: userInfo.avatar,
@@ -159,10 +160,10 @@ router
     })
     .get("/auth", async ctx => {
         // parse response from Discord API authorization (30 char alphanumerical)
-        let regex = /^[A-Za-z0-9]{30}$/
-        let code = ctx.request.url.searchParams.get("code") ?? ""
+        const regex = /^[A-Za-z0-9]{30}$/
+        const code = ctx.request.url.searchParams.get("code") ?? ""
 
-        let check = regex.test(code)
+        const check = regex.test(code)
         console.log("AUTH: code=" + code + " CHECK: " + check)
 
         // authorization code is bad
@@ -171,7 +172,7 @@ router
             return
         }
 
-        let data = new URLSearchParams({
+        const data = new URLSearchParams({
             client_id: CLIENT_ID,
             client_secret: CLIENT_SECRET,
             grant_type: 'authorization_code',
@@ -180,13 +181,13 @@ router
             scope: 'identify email guilds'
         })
 
-        let headers = {
+        const headers = {
             'Content-Type': 'application/x-www-form-urlencoded'
         }
 
         console.log("Exchanging auth grant for access token")
         // exchange authorization grant for access token
-        let result = await fetch(DISCORD_API + OAUTH_TOKEN, {
+        const result = await fetch(DISCORD_API + OAUTH_TOKEN, {
             method: "POST",
             body: data,
             headers: headers
@@ -195,7 +196,7 @@ router
         console.log(result.status)
         console.log(result.statusText)
 
-        let accessToken: AccessToken = await result.json()
+        const accessToken: AccessToken = await result.json()
         console.log("Access Token: " + accessToken.access_token + " " + accessToken.expires_in)
 
         if (regex.test(accessToken.access_token)) {
@@ -209,9 +210,9 @@ router
         }
     })
     .post("/identity", async ctx => {
-        ctx.response.body = await getIdentity(ctx)
+        ctx.response.body = await getIdentity(ctx.cookies, ctx.response)
     })
-    .get("/images/:path*", async ctx => {
+    .get("/images/:path*", ctx => {
         if (ctx.params && ctx.params.path) {
             console.log("Fetching image: " + ctx.params.path)
             ctx.response.body = DISCORD_CDN + ctx.params.path
@@ -221,7 +222,7 @@ router
         if (ctx.params && ctx.params.userid) {
             console.log("Fetching user roles: " + ctx.params.userid)
 
-            let response = await fetch(DISCORD_API + "guilds/" + GUILD_INFO.id + "/members/" + ctx.params.userid, {
+            const response = await fetch(DISCORD_API + "guilds/" + GUILD_INFO.id + "/members/" + ctx.params.userid, {
                 headers: {
                     'Authorization': "Bot " + BOT_SECRET
                 }
@@ -245,21 +246,21 @@ router
         console.log("/save")
 
         // Grab latest copy of all roles
-        let roles = await getRoles()
+        const roles = await getRoles()
 
         const payload = ctx.request.body()
         if (payload.type == "json") {
-            let savePayload: SavePayload = await payload.value
+            const savePayload: SavePayload = await payload.value
 
 	        // verify identity (make sure user is properly authenticated)
-            let identityResponse = await getIdentity(ctx)
+            const identityResponse = await getIdentity(ctx.cookies, ctx.response)
             if (identityResponse == "") {
                 ctx.response.status = Status.Unauthorized
                 ctx.response.redirect("/bad-auth.html")
                 return
             }
 
-            let identity = JSON.parse(identityResponse).id
+            const identity = JSON.parse(identityResponse).id
 
             if (identity !== savePayload.userID) {
                 ctx.response.status = Status.Unauthorized

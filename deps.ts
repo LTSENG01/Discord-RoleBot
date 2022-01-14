@@ -1,11 +1,7 @@
 export {
-    Application, Router, send
-} from "https://deno.land/x/oak/mod.ts"
-
-export type {
-    RouterContext
-} from "https://deno.land/x/oak/mod.ts"
+    Application, Router, send, Response, Cookies
+} from "https://deno.land/x/oak@v10.1.0/mod.ts"
 
 export {
     Status
-} from "https://deno.land/x/oak/deps.ts"
+} from "https://deno.land/x/oak@v10.1.0/deps.ts"
