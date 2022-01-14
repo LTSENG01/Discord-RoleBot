@@ -5,7 +5,7 @@ const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 const app = new Application()
 const router = new Router()
 
-const DEBUG = true
+const DEBUG = false
 const TEST_GUILD = false
 
 const DISCORD_API = "https://discord.com/api/"
@@ -114,7 +114,7 @@ async function getRoles() {
  * @param response
  */
 async function getIdentity(cookies: Cookies, response: Response) {
-    const accessToken = cookies.get("discord-access-token") ?? ""
+    const accessToken = await cookies.get("discord-access-token") ?? ""
 
     const identity = await fetch(DISCORD_API + "users/@me", {
         headers: {
@@ -150,6 +150,8 @@ async function getIdentity(cookies: Cookies, response: Response) {
         discriminator: userInfo.discriminator,
         inCorrectGuild: inCorrectGuild(guildInfo, GUILD_INFO.id)
     }
+
+    console.log(user)
 
     return JSON.stringify(user)
 }
