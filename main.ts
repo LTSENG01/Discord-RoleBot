@@ -34,8 +34,7 @@ const residenceRegex = /^(zoomer|central|ohill|northeast|southwest|honors|sylvan
 const csCoursesRegex = /^(cs|cics|info)/i
 const mathCoursesRegex = /^(math|stat)/i
 const interdisciplinaryCoursesRegex = /^(business|biology|economics|engineering|linguistics|psychology|informatics|physics|chemistry)/i
-const hobbiesRegex = /^(personal projects|hardware|video games|personal finance|music|travel|food|fitness|linux|sports|pet 
-pics|anime|outfits|books|movies and tv)/i
+const hobbiesRegex = /^(personal projects|hardware|video games|personal finance|music|travel|food|fitness|linux|sports|pet pics|anime|outfits|books|movies)/i
 const miscellaneousRegex = /^(snooper|daily coding problems|community events)/i
 
 const regexArray = [restrictedRegex, identityRegex, graduationRegex, concentrationRegex, residenceRegex, csCoursesRegex,
