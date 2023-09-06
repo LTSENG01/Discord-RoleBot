@@ -26,6 +26,7 @@ const GUILD_INFO = {
     icon: "a_5addd83a4328a1a9772c53d1e6c18978"
 }
 
+const digitRegex = /^\d+$/;
 const restrictedRegex = /(server|verified|@everyone|umass cics|cics role bot|cics utility|admin|moderator|bot contributor|instructor|uca|\bta\b|class liaison|club officer|----)/i
 const identityRegex = /^(he\/him|she\/her|they\/them|ze\/hir)/i
 const graduationRegex = /^(alumni|graduate student|class of \d{4}|international)/i
@@ -222,6 +223,12 @@ router
     })
     .get("/userroles/:userid", async ctx => {
         if (ctx.params && ctx.params.userid) {
+            // verify that the userid is a number
+            if (!digitRegex.test(ctx.params.userid)) {
+                ctx.response.status = Status.BadRequest
+                return
+            }
+
             console.log("Fetching user roles: " + ctx.params.userid)
 
             const response = await fetch(DISCORD_API + "guilds/" + GUILD_INFO.id + "/members/" + ctx.params.userid, {
@@ -269,13 +276,13 @@ router
                 return
             }
 
-            // sanitize roles (remove restricted roles)
+            // sanitize roles (remove restricted roles and non-digit roles)
             savePayload.rolesToAdd = savePayload.rolesToAdd.filter(roleID => {
-                return !roles.some((role: Role) => role.category === "restricted" && role.id === roleID)
+                return digitRegex.test(roleID) && !roles.some((role: Role) => role.category === "restricted" && role.id === roleID)
             })
 
             savePayload.rolesToRemove = savePayload.rolesToRemove.filter(roleID => {
-                return !roles.some((role: Role) => role.category === "restricted" && role.id === roleID)
+                return digitRegex.test(roleID) && !roles.some((role: Role) => role.category === "restricted" && role.id === roleID)
             })
 
             if (savePayload.rolesToAdd.length === 0 && savePayload.rolesToRemove.length === 0) {
